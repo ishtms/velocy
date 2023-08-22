@@ -1,0 +1,26 @@
+{
+  "name": "velocy",
+  "version": "0.0.2",
+  "description": "A blazing fast, minimal backend framework for Node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ishtms/velocy.git"
+  },
+  "keywords": [
+    "web",
+    "framework",
+    "fast",
+    "backend",
+    "api"
+  ],
+  "author": "Ishtmeet Singh <ish.rissam@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ishtms/velocy/issues"
+  },
+  "homepage": "https://github.com/ishtms/velocy#readme"
+}
