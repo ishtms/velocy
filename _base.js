@@ -1,6 +1,5 @@
 /**
- * This file will be used to base our benchmarking off of.
- * It will be used to test the performance of our framework.
+ * This file will be used to set the baseline for our numbers while benchmarking
  */
 
 const http = require('http');
