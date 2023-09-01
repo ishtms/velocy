@@ -1,3 +1,5 @@
 # Ignoring 
 db-client.js
 db-server.js
+test.js
+node_modules/
