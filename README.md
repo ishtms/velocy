@@ -112,6 +112,4 @@ createServer(api_router).listen(3000, () => {
 // GET /api/v1/users/:id   -> {"user":"1"}
 // GET /api/v1/teams       -> {"teams":["Team Red","Team Blue"]}
 ```
-
-```
 ![](https://uddrapi.com/api/img?page=velocy_homepage)
