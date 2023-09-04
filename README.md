@@ -1,6 +1,12 @@
 # Velocy
 A blazing fast, minimal backend framework for Node.js
 
+Install the package
+```bash
+npm i velocy
+# or
+yarn add velocy
+```
 Import the `Router` class, and the `createServer` utility -
 ```js
 const { Router, createServer } = require('velocy');
