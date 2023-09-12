@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/ishtms/velocy/issues"
   },
-  "homepage": "https://github.com/ishtms/velocy#readme"
+  "homepage": "https://github.com/ishtms/velocy#readme",
+  "dependencies": {
+    "sharp": "^0.32.5"
+  }
 }
