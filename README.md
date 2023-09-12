@@ -62,6 +62,7 @@ router.printTree();
 ```
 
 The tree output.
+
 ![Tree](/assets/imgs/tree.png)
 
 Merge routers
