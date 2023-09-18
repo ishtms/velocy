@@ -61,7 +61,7 @@ router.post("/hello/world", function post_hello_world(req, res) {});
 router.printTree();
 ```
 
-The tree output.
+The tree output:
 
 ![Tree](/assets/imgs/tree.png)
 
