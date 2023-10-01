@@ -29,24 +29,37 @@ router.get("/", (req, res) => res.end("Hello, world!"));
 
 // Or add dynamic parameters
 router.get("/api/:version/user/:userId", (req, res) => {
-    const { version, userId } = req.params;
-    res.end(`API version: ${version}, User ID: ${userId}`);
+	const { version, userId } = req.params;
+	res.end(`API version: ${version}, User ID: ${userId}`);
 });
 
 // add a catch-all route
 router.get("*", (req, res) => res.end("404 Not Found"));
 ```
 
+Define Routes with Optional Parameters
+
+````js
+router.get("/user/:id?", (req, res) => {
+    // Handle user with or without an ID
+});
+router.get("/product/:code([A-Z]{3}\\d{3})", (req, res) => {
+    // Handle products with a specific code format, e.g., ABC123
+});
+router.get("/user/:id(\\d+)", (req, res) => {
+    // Handle users with numeric IDs
+});
+´´´
 Start the server
 
 ```js
 createServer(router).listen(3000);
-```
+````
 
 Print the entire route tree (for debugging only):
 
--   Shows the name of the function if a named function is passed as a callback
--   Shows the function body trimmed down to 30 characters if used an anonymous function
+- Shows the name of the function if a named function is passed as a callback
+- Shows the function body trimmed down to 30 characters if used an anonymous function
 
 ```js
 router.get("/", function base_route(req, res) {});
@@ -71,25 +84,27 @@ Merge routers
 const { Router, createServer } = require("velocy");
 
 function getUserList(req, res) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end("/users: " + JSON.stringify({ users: ["Ishtmeet", "Jon"] }));
+	res.writeHead(200, { "Content-Type": "application/json" });
+	res.end("/users: " + JSON.stringify({ users: ["Ishtmeet", "Jon"] }));
 }
 
 function showUserInfo(req, res) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end("/users/:id: " + JSON.stringify({ user: req.extractedParams.id }));
+	res.writeHead(200, { "Content-Type": "application/json" });
+	res.end("/users/:id: " + JSON.stringify({ user: req.extractedParams.id }));
 }
 
 function teamsList(req, res) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end("/teams: " + JSON.stringify({ teams: ["Team Red", "Team Blue"] }));
+	res.writeHead(200, { "Content-Type": "application/json" });
+	res.end("/teams: " + JSON.stringify({ teams: ["Team Red", "Team Blue"] }));
 }
 const base_routes = new Router().get("/", (req, res) => {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end("Hello World");
+	res.writeHead(200, { "Content-Type": "text/plain" });
+	res.end("Hello World");
 });
 
-const user_routes = new Router().get("/users", getUserList).get("/users/:id", showUserInfo);
+const user_routes = new Router()
+	.get("/users", getUserList)
+	.get("/users/:id", showUserInfo);
 const team_routes = new Router().get("/teams", teamsList);
 
 const main_router = new Router();
@@ -110,25 +125,27 @@ Nest routers
 const { Router, createServer } = require("velocy");
 
 function getUserList(req, res) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end("/users: " + JSON.stringify({ users: ["Ishtmeet", "Jon"] }));
+	res.writeHead(200, { "Content-Type": "application/json" });
+	res.end("/users: " + JSON.stringify({ users: ["Ishtmeet", "Jon"] }));
 }
 
 function showUserInfo(req, res) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end("/users/:id: " + JSON.stringify({ user: req.extractedParams.id }));
+	res.writeHead(200, { "Content-Type": "application/json" });
+	res.end("/users/:id: " + JSON.stringify({ user: req.extractedParams.id }));
 }
 
 function teamsList(req, res) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end("/teams: " + JSON.stringify({ teams: ["Team Red", "Team Blue"] }));
+	res.writeHead(200, { "Content-Type": "application/json" });
+	res.end("/teams: " + JSON.stringify({ teams: ["Team Red", "Team Blue"] }));
 }
 const base_routes = new Router().get("/", (req, res) => {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end("Hello World");
+	res.writeHead(200, { "Content-Type": "text/plain" });
+	res.end("Hello World");
 });
 
-const user_routes = new Router().get("/users", getUserList).get("/users/:id", showUserInfo);
+const user_routes = new Router()
+	.get("/users", getUserList)
+	.get("/users/:id", showUserInfo);
 const team_routes = new Router().get("/teams", teamsList);
 
 const main_router = new Router();
@@ -140,7 +157,7 @@ const api_router = new Router();
 api_router.nest("/api/v1", main_router);
 
 createServer(api_router).listen(3000, () => {
-    console.log("Server is running on port 3000");
+	console.log("Server is running on port 3000");
 });
 
 // Response
