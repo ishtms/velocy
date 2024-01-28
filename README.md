@@ -2,6 +2,8 @@
 
 A blazing fast, minimal backend framework for Node.js
 
+> :warning: **Live stream**: We're now coding/building this framework live on [YouTube](https://youtube.com/@ishtms)!
+
 Install the package
 
 ```bash
