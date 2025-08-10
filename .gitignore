@@ -1,4 +1,7 @@
 # Ignoring
+.gitignore
+.claude/
+CLAUDE.md
 db-client.js
 db-server.js
 test.js

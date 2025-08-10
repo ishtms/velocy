@@ -1,1 +1,1 @@
-module.exports = require('./lib/velocy')
+module.exports = require("./lib");

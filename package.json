@@ -2,7 +2,7 @@
   "name": "velocy",
   "version": "0.0.14",
   "description": "A blazing fast, minimal backend framework for Node.js",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "test"
   },
@@ -22,9 +22,5 @@
   "bugs": {
     "url": "https://github.com/ishtms/velocy/issues"
   },
-  "homepage": "https://github.com/ishtms/velocy#readme",
-  "dependencies": {
-    "restana": "^4.9.7",
-    "velocy": "^0.0.13"
-  }
+  "homepage": "https://github.com/ishtms/velocy#readme"
 }
