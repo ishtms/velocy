@@ -1185,17 +1185,6 @@ server.listen(3000, () => {
 });
 ```
 
-## Performance Benchmarks
-
-Velocy is designed for maximum performance with zero dependencies. Here are benchmark results comparing Velocy to other popular frameworks:
-
-![Benchmark Results](/assets/benchmark.webp)
-
-- **Requests/sec**: 50,000+ on standard hardware
-- **Latency**: Sub-millisecond response times
-- **Memory**: Minimal memory footprint
-- **Startup**: Fast cold start times
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
