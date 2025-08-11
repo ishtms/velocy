@@ -7,7 +7,6 @@
   
   [![npm version](https://img.shields.io/npm/v/velocy.svg)](https://www.npmjs.com/package/velocy)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Node.js Version](https://img.shields.io/node/v/velocy.svg)](https://nodejs.org)
 </div>
 
 ## Features
