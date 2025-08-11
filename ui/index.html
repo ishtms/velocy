@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocy API Tester - Professional API Testing Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                <h1>Velocy <span>API Tester</span></h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <h3>Testing Tools</h3>
+                    <a href="#" class="nav-item active" data-view="http">
+                        <i class="fas fa-globe"></i>
+                        <span>HTTP Requests</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="websocket">
+                        <i class="fas fa-plug"></i>
+                        <span>WebSocket</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="batch">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Batch Testing</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3>Collections</h3>
+                    <a href="#" class="nav-item" data-view="saved">
+                        <i class="fas fa-bookmark"></i>
+                        <span>Saved Requests</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="history">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3>Documentation</h3>
+                    <a href="#" class="nav-item" data-view="routes">
+                        <i class="fas fa-route"></i>
+                        <span>Available Routes</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="examples">
+                        <i class="fas fa-code"></i>
+                        <span>Examples</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="server-status">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Server Running</span>
+                </div>
+                <div class="server-info">
+                    <small>http://localhost:3000</small>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- HTTP Request View -->
+            <div id="http-view" class="view active">
+                <div class="request-builder">
+                    <div class="request-header">
+                        <h2>HTTP Request Builder</h2>
+                        <div class="quick-actions">
+                            <button class="btn-icon" title="Save Request">
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button class="btn-icon" title="Clear">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="request-url-bar">
+                        <select id="method" class="method-select">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="HEAD">HEAD</option>
+                            <option value="OPTIONS">OPTIONS</option>
+                        </select>
+                        <input type="text" id="url" class="url-input" placeholder="Enter request URL (e.g., /api/users)" value="/api/test">
+                        <button id="send-btn" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Send
+                        </button>
+                    </div>
+                    
+                    <div class="request-tabs">
+                        <div class="tabs">
+                            <button class="tab active" data-tab="params">Query Params</button>
+                            <button class="tab" data-tab="headers">Headers</button>
+                            <button class="tab" data-tab="body">Body</button>
+                            <button class="tab" data-tab="auth">Authorization</button>
+                            <button class="tab" data-tab="cookies">Cookies</button>
+                        </div>
+                        
+                        <div class="tab-content">
+                            <!-- Query Params -->
+                            <div id="params-tab" class="tab-panel active">
+                                <div class="key-value-editor">
+                                    <div class="kv-header">
+                                        <span>Key</span>
+                                        <span>Value</span>
+                                        <span></span>
+                                    </div>
+                                    <div id="params-list" class="kv-list">
+                                        <div class="kv-row">
+                                            <input type="text" placeholder="Key" class="kv-key">
+                                            <input type="text" placeholder="Value" class="kv-value">
+                                            <button class="btn-remove"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                    <button class="btn-add" onclick="addParamRow()">
+                                        <i class="fas fa-plus"></i> Add Parameter
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Headers -->
+                            <div id="headers-tab" class="tab-panel">
+                                <div class="key-value-editor">
+                                    <div class="kv-header">
+                                        <span>Header</span>
+                                        <span>Value</span>
+                                        <span></span>
+                                    </div>
+                                    <div id="headers-list" class="kv-list">
+                                        <div class="kv-row">
+                                            <input type="text" placeholder="Header name" class="kv-key" value="Content-Type">
+                                            <input type="text" placeholder="Header value" class="kv-value" value="application/json">
+                                            <button class="btn-remove"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                    <button class="btn-add" onclick="addHeaderRow()">
+                                        <i class="fas fa-plus"></i> Add Header
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Body -->
+                            <div id="body-tab" class="tab-panel">
+                                <div class="body-type-selector">
+                                    <label>
+                                        <input type="radio" name="body-type" value="none" checked>
+                                        <span>None</span>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="body-type" value="json">
+                                        <span>JSON</span>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="body-type" value="form">
+                                        <span>Form Data</span>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="body-type" value="raw">
+                                        <span>Raw</span>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="body-type" value="file">
+                                        <span>File</span>
+                                    </label>
+                                </div>
+                                
+                                <div id="body-none" class="body-content active">
+                                    <p class="info-text">This request does not have a body</p>
+                                </div>
+                                
+                                <div id="body-json" class="body-content">
+                                    <div class="code-editor">
+                                        <textarea id="json-input" placeholder='{"key": "value"}'>{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "age": 30
+}</textarea>
+                                    </div>
+                                </div>
+                                
+                                <div id="body-form" class="body-content">
+                                    <div class="key-value-editor">
+                                        <div class="kv-header">
+                                            <span>Key</span>
+                                            <span>Value</span>
+                                            <span></span>
+                                        </div>
+                                        <div id="form-list" class="kv-list">
+                                            <div class="kv-row">
+                                                <input type="text" placeholder="Key" class="kv-key">
+                                                <input type="text" placeholder="Value" class="kv-value">
+                                                <button class="btn-remove"><i class="fas fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                        <button class="btn-add" onclick="addFormRow()">
+                                            <i class="fas fa-plus"></i> Add Field
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="body-raw" class="body-content">
+                                    <div class="code-editor">
+                                        <textarea id="raw-input" placeholder="Enter raw body content"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div id="body-file" class="body-content">
+                                    <div class="file-upload">
+                                        <input type="file" id="file-input" multiple>
+                                        <label for="file-input" class="file-label">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            <span>Choose files to upload</span>
+                                        </label>
+                                        <div id="file-list" class="file-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Authorization -->
+                            <div id="auth-tab" class="tab-panel">
+                                <div class="auth-selector">
+                                    <select id="auth-type">
+                                        <option value="none">No Auth</option>
+                                        <option value="bearer">Bearer Token</option>
+                                        <option value="basic">Basic Auth</option>
+                                        <option value="apikey">API Key</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="auth-none" class="auth-content active">
+                                    <p class="info-text">This request does not use any authorization</p>
+                                </div>
+                                
+                                <div id="auth-bearer" class="auth-content">
+                                    <div class="form-group">
+                                        <label>Token</label>
+                                        <input type="text" id="bearer-token" placeholder="Enter bearer token">
+                                    </div>
+                                </div>
+                                
+                                <div id="auth-basic" class="auth-content">
+                                    <div class="form-group">
+                                        <label>Username</label>
+                                        <input type="text" id="basic-username" placeholder="Username">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Password</label>
+                                        <input type="password" id="basic-password" placeholder="Password">
+                                    </div>
+                                </div>
+                                
+                                <div id="auth-apikey" class="auth-content">
+                                    <div class="form-group">
+                                        <label>Key</label>
+                                        <input type="text" id="api-key-name" placeholder="X-API-Key">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Value</label>
+                                        <input type="text" id="api-key-value" placeholder="API key value">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Add to</label>
+                                        <select id="api-key-location">
+                                            <option value="header">Header</option>
+                                            <option value="query">Query Params</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Cookies -->
+                            <div id="cookies-tab" class="tab-panel">
+                                <div class="cookies-manager">
+                                    <div class="cookies-list" id="cookies-list"></div>
+                                    <button class="btn-add" onclick="addCookie()">
+                                        <i class="fas fa-plus"></i> Add Cookie
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Response Section -->
+                <div class="response-section">
+                    <div class="response-header">
+                        <h3>Response</h3>
+                        <div class="response-meta">
+                            <span class="response-status" id="response-status"></span>
+                            <span class="response-time" id="response-time"></span>
+                            <span class="response-size" id="response-size"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="response-tabs">
+                        <div class="tabs">
+                            <button class="tab active" data-tab="response-body">Body</button>
+                            <button class="tab" data-tab="response-headers">Headers</button>
+                            <button class="tab" data-tab="response-cookies">Cookies</button>
+                            <button class="tab" data-tab="response-raw">Raw</button>
+                        </div>
+                        
+                        <div class="tab-content">
+                            <div id="response-body-tab" class="tab-panel active">
+                                <div class="response-toolbar">
+                                    <button class="btn-icon" onclick="formatResponse()">
+                                        <i class="fas fa-code"></i> Format
+                                    </button>
+                                    <button class="btn-icon" onclick="copyResponse()">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                                <pre class="response-content" id="response-body"><code class="language-json">Response will appear here...</code></pre>
+                            </div>
+                            
+                            <div id="response-headers-tab" class="tab-panel">
+                                <div class="headers-table" id="response-headers"></div>
+                            </div>
+                            
+                            <div id="response-cookies-tab" class="tab-panel">
+                                <div class="cookies-table" id="response-cookies"></div>
+                            </div>
+                            
+                            <div id="response-raw-tab" class="tab-panel">
+                                <pre class="response-content" id="response-raw"><code>Raw response will appear here...</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- WebSocket View -->
+            <div id="websocket-view" class="view">
+                <div class="websocket-container">
+                    <h2>WebSocket Testing</h2>
+                    
+                    <div class="ws-connection">
+                        <div class="ws-url-bar">
+                            <input type="text" id="ws-url" placeholder="ws://localhost:3000/ws" value="ws://localhost:3000/ws">
+                            <button id="ws-connect" class="btn-primary">
+                                <i class="fas fa-plug"></i> Connect
+                            </button>
+                            <button id="ws-disconnect" class="btn-danger" disabled>
+                                <i class="fas fa-unlink"></i> Disconnect
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="ws-interface">
+                        <div class="ws-send">
+                            <h3>Send Message</h3>
+                            <textarea id="ws-message" placeholder="Enter message to send"></textarea>
+                            <button id="ws-send" class="btn-primary" disabled>
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                        
+                        <div class="ws-messages">
+                            <h3>Messages</h3>
+                            <div class="messages-controls">
+                                <button class="btn-icon" onclick="clearMessages()">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                            <div id="ws-log" class="ws-log"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Routes View -->
+            <div id="routes-view" class="view">
+                <div class="routes-container">
+                    <h2>Available API Routes</h2>
+                    <div id="routes-list" class="routes-list"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
