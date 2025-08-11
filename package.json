@@ -4,7 +4,13 @@
   "description": "A blazing fast, minimal backend framework for Node.js",
   "main": "lib/index.js",
   "scripts": {
-    "test": "test"
+    "test": "node tests/run-tests.js",
+    "test:single": "node",
+    "demo": "node demo-server.js",
+    "start": "node demo-server.js",
+    "benchmark": "node benchmark.js",
+    "bench": "node benchmark-simple.js",
+    "compare": "node old_vs_new.js"
   },
   "repository": {
     "type": "git",
@@ -22,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/ishtms/velocy/issues"
   },
-  "homepage": "https://github.com/ishtms/velocy#readme"
+  "homepage": "https://github.com/ishtms/velocy#readme",
+  "devDependencies": {
+    "velocy": "^0.0.14"
+  }
 }
