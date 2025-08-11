@@ -1,7 +1,7 @@
 # Velocy
 
 <div align="center">
-  <img src="/assets/benchmark.webp" alt="Velocy Benchmark" />
+  <img src="https://raw.githubusercontent.com/ishtms/velocy/0400965766a9be07cf04d8a7bd44c2d3811e8569/assets/benchmark.webp" alt="Velocy Benchmark" />
   
   **A blazing fast, zero-dependency HTTP framework for Node.js**
   
@@ -36,23 +36,23 @@ pnpm add velocy
 ## Quick Start
 
 ```javascript
-const { Router, createServer } = require('velocy');
+const { Router, createServer } = require("velocy");
 
 const app = new Router();
 
 // Basic route
-app.get('/', (req, res) => {
-  res.json({ message: 'Hello, Velocy!' });
+app.get("/", (req, res) => {
+  res.json({ message: "Hello, Velocy!" });
 });
 
 // Dynamic parameters
-app.get('/users/:id', (req, res) => {
+app.get("/users/:id", (req, res) => {
   res.json({ userId: req.params.id });
 });
 
 // Start server
 createServer(app).listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
+  console.log("Server running on http://localhost:3000");
 });
 ```
 
@@ -79,42 +79,39 @@ createServer(app).listen(3000, () => {
 ### Basic Routing
 
 ```javascript
-const { Router } = require('velocy');
+const { Router } = require("velocy");
 const app = new Router();
 
 // HTTP methods
-app.get('/users', (req, res) => res.json({ users: [] }));
-app.post('/users', (req, res) => res.json({ created: true }));
-app.put('/users/:id', (req, res) => res.json({ updated: req.params.id }));
-app.delete('/users/:id', (req, res) => res.json({ deleted: req.params.id }));
-app.patch('/users/:id', (req, res) => res.json({ patched: req.params.id }));
+app.get("/users", (req, res) => res.json({ users: [] }));
+app.post("/users", (req, res) => res.json({ created: true }));
+app.put("/users/:id", (req, res) => res.json({ updated: req.params.id }));
+app.delete("/users/:id", (req, res) => res.json({ deleted: req.params.id }));
+app.patch("/users/:id", (req, res) => res.json({ patched: req.params.id }));
 
 // Route chaining
-app
-  .get('/posts', listPosts)
-  .post('/posts', createPost)
-  .get('/posts/:id', getPost);
+app.get("/posts", listPosts).post("/posts", createPost).get("/posts/:id", getPost);
 ```
 
 ### Dynamic Parameters
 
 ```javascript
 // Single parameter
-app.get('/users/:id', (req, res) => {
+app.get("/users/:id", (req, res) => {
   res.json({ userId: req.params.id });
 });
 
 // Multiple parameters
-app.get('/users/:userId/posts/:postId', (req, res) => {
+app.get("/users/:userId/posts/:postId", (req, res) => {
   res.json({
     userId: req.params.userId,
-    postId: req.params.postId
+    postId: req.params.postId,
   });
 });
 
 // Optional parameters with wildcards
-app.get('/files/*', (req, res) => {
-  res.json({ file: req.params['*'] });
+app.get("/files/*", (req, res) => {
+  res.json({ file: req.params["*"] });
 });
 ```
 
@@ -122,17 +119,17 @@ app.get('/files/*', (req, res) => {
 
 ```javascript
 // Single-segment wildcard (*)
-app.get('/static/*.js', (req, res) => {
-  res.json({ jsFile: req.params['*'] });
+app.get("/static/*.js", (req, res) => {
+  res.json({ jsFile: req.params["*"] });
 });
 
 // Multi-segment wildcard (**)
-app.get('/api/**', (req, res) => {
-  res.json({ path: req.params['**'] });
+app.get("/api/**", (req, res) => {
+  res.json({ path: req.params["**"] });
 });
 
 // Named wildcards
-app.get('/assets/*filename', (req, res) => {
+app.get("/assets/*filename", (req, res) => {
   res.json({ filename: req.params.filename });
 });
 ```
@@ -142,11 +139,11 @@ app.get('/assets/*filename', (req, res) => {
 ```javascript
 // Create modular routers
 const userRouter = new Router();
-userRouter.get('/profile', getUserProfile);
-userRouter.post('/settings', updateSettings);
+userRouter.get("/profile", getUserProfile);
+userRouter.post("/settings", updateSettings);
 
 const apiRouter = new Router();
-apiRouter.get('/status', getApiStatus);
+apiRouter.get("/status", getApiStatus);
 
 // Merge routers
 const mainRouter = new Router();
@@ -155,7 +152,7 @@ mainRouter.merge(apiRouter);
 
 // Nest routers with prefix
 const app = new Router();
-app.nest('/api/v1', mainRouter);
+app.nest("/api/v1", mainRouter);
 // Routes available at: /api/v1/profile, /api/v1/settings, /api/v1/status
 ```
 
@@ -172,7 +169,7 @@ app.printTree();
 ### Global Middleware
 
 ```javascript
-const { Router, bodyParser, cookieParser } = require('velocy');
+const { Router, bodyParser, cookieParser } = require("velocy");
 const app = new Router();
 
 // Apply middleware globally
@@ -196,15 +193,11 @@ app.use(async (req, res, next) => {
 
 ```javascript
 // Apply middleware to specific paths
-app.use('/admin', authenticateAdmin);
-app.use('/api', rateLimiter);
+app.use("/admin", authenticateAdmin);
+app.use("/api", rateLimiter);
 
 // Multiple middleware
-app.use('/protected', [
-  authenticate,
-  authorize,
-  logAccess
-]);
+app.use("/protected", [authenticate, authorize, logAccess]);
 ```
 
 ### Error Handling Middleware
@@ -214,7 +207,7 @@ app.use('/protected', [
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.statusCode || 500).json({
-    error: err.message || 'Internal Server Error'
+    error: err.message || "Internal Server Error",
   });
 });
 ```
@@ -224,29 +217,29 @@ app.use((err, req, res, next) => {
 ### Enhanced Request Object
 
 ```javascript
-app.get('/example', (req, res) => {
+app.get("/example", (req, res) => {
   // URL and query parsing
-  console.log(req.url);        // Full URL
-  console.log(req.path);       // Path without query
-  console.log(req.query);      // Parsed query parameters
-  
+  console.log(req.url); // Full URL
+  console.log(req.path); // Path without query
+  console.log(req.query); // Parsed query parameters
+
   // Headers
-  console.log(req.headers);    // All headers
-  console.log(req.get('content-type')); // Get specific header
-  
+  console.log(req.headers); // All headers
+  console.log(req.get("content-type")); // Get specific header
+
   // Content negotiation
-  console.log(req.accepts('json'));     // Check if client accepts JSON
-  console.log(req.acceptsEncodings(['gzip', 'deflate']));
-  console.log(req.acceptsLanguages(['en', 'es']));
-  
+  console.log(req.accepts("json")); // Check if client accepts JSON
+  console.log(req.acceptsEncodings(["gzip", "deflate"]));
+  console.log(req.acceptsLanguages(["en", "es"]));
+
   // Request info
-  console.log(req.ip);         // Client IP
-  console.log(req.protocol);   // http or https
-  console.log(req.secure);     // Is HTTPS?
-  console.log(req.xhr);        // Is AJAX request?
-  
+  console.log(req.ip); // Client IP
+  console.log(req.protocol); // http or https
+  console.log(req.secure); // Is HTTPS?
+  console.log(req.xhr); // Is AJAX request?
+
   // Cookies (with cookieParser middleware)
-  console.log(req.cookies);    // Parsed cookies
+  console.log(req.cookies); // Parsed cookies
   console.log(req.signedCookies); // Signed cookies
 });
 ```
@@ -254,39 +247,39 @@ app.get('/example', (req, res) => {
 ### Enhanced Response Object
 
 ```javascript
-app.get('/example', (req, res) => {
+app.get("/example", (req, res) => {
   // JSON response
   res.json({ success: true });
-  
+
   // Status codes
   res.status(201).json({ created: true });
-  
+
   // Redirects
-  res.redirect('/new-location');
-  res.redirect(301, '/permanent-redirect');
-  
+  res.redirect("/new-location");
+  res.redirect(301, "/permanent-redirect");
+
   // Headers
-  res.set('X-Custom-Header', 'value');
+  res.set("X-Custom-Header", "value");
   res.set({
-    'X-Header-1': 'value1',
-    'X-Header-2': 'value2'
+    "X-Header-1": "value1",
+    "X-Header-2": "value2",
   });
-  
+
   // Cookies
-  res.cookie('session', 'abc123', {
+  res.cookie("session", "abc123", {
     maxAge: 900000,
     httpOnly: true,
     secure: true,
-    sameSite: 'strict'
+    sameSite: "strict",
   });
-  
+
   // File sending
-  res.sendFile('/path/to/file.pdf');
-  res.download('/path/to/file.pdf', 'custom-name.pdf');
-  
+  res.sendFile("/path/to/file.pdf");
+  res.download("/path/to/file.pdf", "custom-name.pdf");
+
   // Content type
-  res.type('html').send('<h1>Hello</h1>');
-  res.type('text/plain').send('Plain text');
+  res.type("html").send("<h1>Hello</h1>");
+  res.type("text/plain").send("Plain text");
 });
 ```
 
@@ -295,29 +288,29 @@ app.get('/example', (req, res) => {
 ### WebSocket Server Setup
 
 ```javascript
-const { Router, createServer } = require('velocy');
+const { Router, createServer } = require("velocy");
 
 const app = new Router({
   websocket: {
-    heartbeatInterval: 30000,  // Ping every 30 seconds
-    heartbeatTimeout: 60000,   // Close if no pong in 60 seconds
+    heartbeatInterval: 30000, // Ping every 30 seconds
+    heartbeatTimeout: 60000, // Close if no pong in 60 seconds
     maxPayloadSize: 10 * 1024 * 1024, // 10MB max message size
-    enableQueue: true,          // Queue messages for offline clients
-    maxQueueSize: 100          // Max queued messages per client
-  }
+    enableQueue: true, // Queue messages for offline clients
+    maxQueueSize: 100, // Max queued messages per client
+  },
 });
 
 // WebSocket routes
-app.ws('/chat', (ws, req) => {
-  console.log('New WebSocket connection');
-  
-  ws.on('message', (data) => {
+app.ws("/chat", (ws, req) => {
+  console.log("New WebSocket connection");
+
+  ws.on("message", (data) => {
     // Echo message back
     ws.send(JSON.stringify({ echo: data }));
   });
-  
-  ws.on('close', () => {
-    console.log('Connection closed');
+
+  ws.on("close", () => {
+    console.log("Connection closed");
   });
 });
 
@@ -328,38 +321,41 @@ createServer(app).listen(3000);
 
 ```javascript
 // Join/leave rooms
-app.ws('/chat', (ws, req) => {
+app.ws("/chat", (ws, req) => {
   // Join a room
-  ws.join('general');
-  
-  ws.on('message', (data) => {
+  ws.join("general");
+
+  ws.on("message", (data) => {
     const msg = JSON.parse(data);
-    
-    if (msg.type === 'join') {
+
+    if (msg.type === "join") {
       ws.join(msg.room);
       ws.send(JSON.stringify({ joined: msg.room }));
     }
-    
-    if (msg.type === 'leave') {
+
+    if (msg.type === "leave") {
       ws.leave(msg.room);
       ws.send(JSON.stringify({ left: msg.room }));
     }
-    
-    if (msg.type === 'broadcast') {
+
+    if (msg.type === "broadcast") {
       // Broadcast to all in room
-      app.wsRouter.broadcast(msg.room, JSON.stringify({
-        from: ws.id,
-        message: msg.text
-      }));
+      app.wsRouter.broadcast(
+        msg.room,
+        JSON.stringify({
+          from: ws.id,
+          message: msg.text,
+        })
+      );
     }
   });
 });
 
 // Broadcast to all connected clients
-app.wsRouter.broadcastAll(JSON.stringify({ announcement: 'Server message' }));
+app.wsRouter.broadcastAll(JSON.stringify({ announcement: "Server message" }));
 
 // Get room information
-const roomClients = app.wsRouter.getRoom('general');
+const roomClients = app.wsRouter.getRoom("general");
 const allRooms = app.wsRouter.getRooms();
 ```
 
@@ -368,27 +364,27 @@ const allRooms = app.wsRouter.getRooms();
 ### Built-in Template Engine
 
 ```javascript
-const { Router, createServer } = require('velocy');
+const { Router, createServer } = require("velocy");
 const app = new Router();
 
 // Configure views
-app.set('views', './views');
-app.set('view engine', 'html');
-app.set('view cache', true); // Enable caching in production
+app.set("views", "./views");
+app.set("view engine", "html");
+app.set("view cache", true); // Enable caching in production
 
 // Render templates
-app.get('/', (req, res) => {
-  res.render('index', {
-    title: 'Velocy App',
-    user: { name: 'John' }
+app.get("/", (req, res) => {
+  res.render("index", {
+    title: "Velocy App",
+    user: { name: "John" },
   });
 });
 
 // With layout
-app.get('/about', (req, res) => {
-  res.render('about', {
-    title: 'About Us',
-    layout: 'layouts/main'
+app.get("/about", (req, res) => {
+  res.render("about", {
+    title: "About Us",
+    layout: "layouts/main",
   });
 });
 ```
@@ -397,18 +393,18 @@ app.get('/about', (req, res) => {
 
 ```javascript
 // Register a custom engine
-app.engine('ejs', {
+app.engine("ejs", {
   compile: (template, options) => {
     // Return compiled function
     return (locals) => {
       // Render template with locals
       return renderedHtml;
     };
-  }
+  },
 });
 
 // Use the custom engine
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 ```
 
 ## Static Files
@@ -416,32 +412,35 @@ app.set('view engine', 'ejs');
 ### Serving Static Files
 
 ```javascript
-const { Router, static: staticMiddleware } = require('velocy');
+const { Router, static: staticMiddleware } = require("velocy");
 const app = new Router();
 
 // Serve static files from 'public' directory
-app.use('/static', staticMiddleware('./public', {
-  index: 'index.html',          // Default file
-  dotfiles: 'ignore',            // How to handle dotfiles
-  etag: true,                    // Enable ETags
-  lastModified: true,            // Send Last-Modified header
-  maxAge: '1d',                  // Cache control max-age
-  immutable: true,               // Add immutable directive
-  fallthrough: true,             // Pass to next middleware if not found
-  acceptRanges: true,            // Enable range requests
-  cacheControl: true,            // Send Cache-Control header
-  
-  // Custom headers
-  setHeaders: (res, path, stat) => {
-    if (path.endsWith('.pdf')) {
-      res.set('Content-Disposition', 'attachment');
-    }
-  }
-}));
+app.use(
+  "/static",
+  staticMiddleware("./public", {
+    index: "index.html", // Default file
+    dotfiles: "ignore", // How to handle dotfiles
+    etag: true, // Enable ETags
+    lastModified: true, // Send Last-Modified header
+    maxAge: "1d", // Cache control max-age
+    immutable: true, // Add immutable directive
+    fallthrough: true, // Pass to next middleware if not found
+    acceptRanges: true, // Enable range requests
+    cacheControl: true, // Send Cache-Control header
+
+    // Custom headers
+    setHeaders: (res, path, stat) => {
+      if (path.endsWith(".pdf")) {
+        res.set("Content-Disposition", "attachment");
+      }
+    },
+  })
+);
 
 // Multiple static directories
-app.use('/assets', staticMiddleware('./assets'));
-app.use('/downloads', staticMiddleware('./files'));
+app.use("/assets", staticMiddleware("./assets"));
+app.use("/downloads", staticMiddleware("./files"));
 ```
 
 ## Body Parsing
@@ -449,27 +448,31 @@ app.use('/downloads', staticMiddleware('./files'));
 ### JSON and URL-encoded
 
 ```javascript
-const { Router, bodyParser } = require('velocy');
+const { Router, bodyParser } = require("velocy");
 const app = new Router();
 
 // Parse JSON bodies
-app.use(bodyParser.json({
-  limit: '10mb',              // Size limit
-  strict: true,               // Only accept arrays and objects
-  reviver: null,              // JSON.parse reviver function
-  type: 'application/json'   // Content-type to parse
-}));
+app.use(
+  bodyParser.json({
+    limit: "10mb", // Size limit
+    strict: true, // Only accept arrays and objects
+    reviver: null, // JSON.parse reviver function
+    type: "application/json", // Content-type to parse
+  })
+);
 
 // Parse URL-encoded bodies
-app.use(bodyParser.urlencoded({
-  extended: true,             // Use querystring library
-  limit: '10mb',              // Size limit
-  parameterLimit: 1000,       // Max number of parameters
-  type: 'application/x-www-form-urlencoded'
-}));
+app.use(
+  bodyParser.urlencoded({
+    extended: true, // Use querystring library
+    limit: "10mb", // Size limit
+    parameterLimit: 1000, // Max number of parameters
+    type: "application/x-www-form-urlencoded",
+  })
+);
 
 // Access parsed body
-app.post('/users', (req, res) => {
+app.post("/users", (req, res) => {
   console.log(req.body); // Parsed body
   res.json({ received: req.body });
 });
@@ -479,30 +482,32 @@ app.post('/users', (req, res) => {
 
 ```javascript
 // Parse multipart form data
-app.use(bodyParser.multipart({
-  uploadDir: './uploads',     // Directory for file uploads
-  keepExtensions: true,       // Keep file extensions
-  maxFileSize: 10 * 1024 * 1024, // 10MB max file size
-  maxFields: 1000,            // Max number of fields
-  maxFieldsSize: 20 * 1024 * 1024, // 20MB max for all fields
-  hash: 'md5',                // Calculate file hash
-  multiples: true,            // Parse multiple files
-  
-  // File filter
-  fileFilter: (part) => {
-    // Only accept images
-    return part.mimetype.startsWith('image/');
-  }
-}));
+app.use(
+  bodyParser.multipart({
+    uploadDir: "./uploads", // Directory for file uploads
+    keepExtensions: true, // Keep file extensions
+    maxFileSize: 10 * 1024 * 1024, // 10MB max file size
+    maxFields: 1000, // Max number of fields
+    maxFieldsSize: 20 * 1024 * 1024, // 20MB max for all fields
+    hash: "md5", // Calculate file hash
+    multiples: true, // Parse multiple files
+
+    // File filter
+    fileFilter: (part) => {
+      // Only accept images
+      return part.mimetype.startsWith("image/");
+    },
+  })
+);
 
 // Handle file uploads
-app.post('/upload', (req, res) => {
-  console.log(req.body);    // Form fields
-  console.log(req.files);   // Uploaded files
-  
+app.post("/upload", (req, res) => {
+  console.log(req.body); // Form fields
+  console.log(req.files); // Uploaded files
+
   res.json({
     fields: req.body,
-    files: req.files
+    files: req.files,
   });
 });
 ```
@@ -511,17 +516,21 @@ app.post('/upload', (req, res) => {
 
 ```javascript
 // Parse raw body
-app.use(bodyParser.raw({
-  type: 'application/octet-stream',
-  limit: '10mb'
-}));
+app.use(
+  bodyParser.raw({
+    type: "application/octet-stream",
+    limit: "10mb",
+  })
+);
 
 // Parse text body
-app.use(bodyParser.text({
-  type: 'text/plain',
-  defaultCharset: 'utf-8',
-  limit: '1mb'
-}));
+app.use(
+  bodyParser.text({
+    type: "text/plain",
+    defaultCharset: "utf-8",
+    limit: "1mb",
+  })
+);
 ```
 
 ## Cookies
@@ -529,47 +538,47 @@ app.use(bodyParser.text({
 ### Cookie Parsing and Setting
 
 ```javascript
-const { Router, cookieParser } = require('velocy');
+const { Router, cookieParser } = require("velocy");
 const app = new Router();
 
 // Enable cookie parsing with optional secret for signed cookies
-app.use(cookieParser('optional-secret-key'));
+app.use(cookieParser("optional-secret-key"));
 
 // Read cookies
-app.get('/cookies', (req, res) => {
-  console.log(req.cookies);       // Regular cookies
+app.get("/cookies", (req, res) => {
+  console.log(req.cookies); // Regular cookies
   console.log(req.signedCookies); // Signed cookies
-  
+
   res.json({
     cookies: req.cookies,
-    signed: req.signedCookies
+    signed: req.signedCookies,
   });
 });
 
 // Set cookies
-app.get('/set-cookie', (req, res) => {
+app.get("/set-cookie", (req, res) => {
   // Simple cookie
-  res.cookie('name', 'value');
-  
+  res.cookie("name", "value");
+
   // Cookie with options
-  res.cookie('session', 'abc123', {
-    domain: '.example.com',     // Cookie domain
-    path: '/',                   // Cookie path
-    secure: true,                // HTTPS only
-    httpOnly: true,              // Not accessible via JavaScript
-    maxAge: 900000,              // Max age in milliseconds
+  res.cookie("session", "abc123", {
+    domain: ".example.com", // Cookie domain
+    path: "/", // Cookie path
+    secure: true, // HTTPS only
+    httpOnly: true, // Not accessible via JavaScript
+    maxAge: 900000, // Max age in milliseconds
     expires: new Date(Date.now() + 900000), // Expiration date
-    sameSite: 'strict',          // CSRF protection
-    signed: true                 // Sign the cookie
+    sameSite: "strict", // CSRF protection
+    signed: true, // Sign the cookie
   });
-  
+
   res.json({ set: true });
 });
 
 // Clear cookies
-app.get('/clear-cookie', (req, res) => {
-  res.clearCookie('name');
-  res.clearCookie('session', { path: '/' });
+app.get("/clear-cookie", (req, res) => {
+  res.clearCookie("name");
+  res.clearCookie("session", { path: "/" });
   res.json({ cleared: true });
 });
 ```
@@ -579,53 +588,56 @@ app.get('/clear-cookie', (req, res) => {
 ### Session Management
 
 ```javascript
-const { Router, session } = require('velocy');
+const { Router, session } = require("velocy");
 const app = new Router();
 
 // Configure sessions
-app.use(session({
-  secret: 'keyboard-cat',       // Secret for signing session ID
-  resave: false,                // Don't save unchanged sessions
-  saveUninitialized: false,     // Don't create empty sessions
-  rolling: true,                // Reset expiry on activity
-  
-  cookie: {
-    secure: true,               // HTTPS only
-    httpOnly: true,             // Not accessible via JavaScript
-    maxAge: 1000 * 60 * 60,    // 1 hour
-    sameSite: 'strict'         // CSRF protection
-  },
-  
-  name: 'sessionId',           // Cookie name
-  genid: () => generateId(),   // Custom ID generator
-  
-  store: new MemoryStore({     // Session store (default: memory)
-    checkPeriod: 86400000      // Prune expired entries every 24h
+app.use(
+  session({
+    secret: "keyboard-cat", // Secret for signing session ID
+    resave: false, // Don't save unchanged sessions
+    saveUninitialized: false, // Don't create empty sessions
+    rolling: true, // Reset expiry on activity
+
+    cookie: {
+      secure: true, // HTTPS only
+      httpOnly: true, // Not accessible via JavaScript
+      maxAge: 1000 * 60 * 60, // 1 hour
+      sameSite: "strict", // CSRF protection
+    },
+
+    name: "sessionId", // Cookie name
+    genid: () => generateId(), // Custom ID generator
+
+    store: new MemoryStore({
+      // Session store (default: memory)
+      checkPeriod: 86400000, // Prune expired entries every 24h
+    }),
   })
-}));
+);
 
 // Use sessions
-app.get('/login', (req, res) => {
+app.get("/login", (req, res) => {
   req.session.userId = 123;
-  req.session.username = 'john';
+  req.session.username = "john";
   res.json({ logged_in: true });
 });
 
-app.get('/profile', (req, res) => {
+app.get("/profile", (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).json({ error: 'Not logged in' });
+    return res.status(401).json({ error: "Not logged in" });
   }
-  
+
   res.json({
     userId: req.session.userId,
-    username: req.session.username
+    username: req.session.username,
   });
 });
 
-app.get('/logout', (req, res) => {
+app.get("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      return res.status(500).json({ error: 'Could not log out' });
+      return res.status(500).json({ error: "Could not log out" });
     }
     res.json({ logged_out: true });
   });
@@ -637,44 +649,46 @@ app.get('/logout', (req, res) => {
 ### Cross-Origin Resource Sharing
 
 ```javascript
-const { Router, cors } = require('velocy');
+const { Router, cors } = require("velocy");
 const app = new Router();
 
 // Enable CORS with default settings
 app.use(cors());
 
 // Custom CORS configuration
-app.use(cors({
-  origin: 'https://example.com',        // Allowed origin
-  // or multiple origins
-  origin: ['https://example.com', 'https://app.example.com'],
-  // or dynamic origin
-  origin: (origin, callback) => {
-    if (isAllowed(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-  exposedHeaders: ['Content-Length', 'X-Token'], // Headers exposed to client
-  credentials: true,                     // Allow credentials
-  maxAge: 86400,                        // Preflight cache duration
-  preflightContinue: false,              // Pass preflight to next handler
-  optionsSuccessStatus: 204             // Status for successful OPTIONS
-}));
+app.use(
+  cors({
+    origin: "https://example.com", // Allowed origin
+    // or multiple origins
+    origin: ["https://example.com", "https://app.example.com"],
+    // or dynamic origin
+    origin: (origin, callback) => {
+      if (isAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    exposedHeaders: ["Content-Length", "X-Token"], // Headers exposed to client
+    credentials: true, // Allow credentials
+    maxAge: 86400, // Preflight cache duration
+    preflightContinue: false, // Pass preflight to next handler
+    optionsSuccessStatus: 204, // Status for successful OPTIONS
+  })
+);
 
 // CORS for specific routes
-app.get('/api/public', cors(), handler);
+app.get("/api/public", cors(), handler);
 
 // Different CORS per route
 const corsOptions = {
-  origin: 'https://trusted.com',
-  credentials: true
+  origin: "https://trusted.com",
+  credentials: true,
 };
-app.get('/api/private', cors(corsOptions), handler);
+app.get("/api/private", cors(corsOptions), handler);
 ```
 
 ## Compression
@@ -682,36 +696,38 @@ app.get('/api/private', cors(corsOptions), handler);
 ### Response Compression
 
 ```javascript
-const { Router, compression } = require('velocy');
+const { Router, compression } = require("velocy");
 const app = new Router();
 
 // Enable compression with default settings
 app.use(compression());
 
 // Custom compression configuration
-app.use(compression({
-  threshold: 1024,              // Min size to compress (bytes)
-  level: 6,                     // Compression level (0-9)
-  memLevel: 8,                  // Memory level (1-9)
-  strategy: 0,                  // Compression strategy
-  chunkSize: 16384,             // Chunk size
-  windowBits: 15,               // Window bits
-  
-  filter: (req, res) => {
-    // Custom logic to determine if response should be compressed
-    if (req.headers['x-no-compression']) {
-      return false;
-    }
-    return compression.filter(req, res);
-  },
-  
-  // Brotli options
-  brotli: {
-    enabled: true,
-    quality: 4,                // Brotli quality (0-11)
-    lgwin: 22                  // Brotli window size
-  }
-}));
+app.use(
+  compression({
+    threshold: 1024, // Min size to compress (bytes)
+    level: 6, // Compression level (0-9)
+    memLevel: 8, // Memory level (1-9)
+    strategy: 0, // Compression strategy
+    chunkSize: 16384, // Chunk size
+    windowBits: 15, // Window bits
+
+    filter: (req, res) => {
+      // Custom logic to determine if response should be compressed
+      if (req.headers["x-no-compression"]) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+
+    // Brotli options
+    brotli: {
+      enabled: true,
+      quality: 4, // Brotli quality (0-11)
+      lgwin: 22, // Brotli window size
+    },
+  })
+);
 ```
 
 ## Rate Limiting
@@ -719,52 +735,54 @@ app.use(compression({
 ### Request Rate Limiting
 
 ```javascript
-const { Router, rateLimit } = require('velocy');
+const { Router, rateLimit } = require("velocy");
 const app = new Router();
 
 // Basic rate limiting
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,    // 15 minutes
-  max: 100,                     // Max 100 requests per window
-  message: 'Too many requests', // Error message
-  statusCode: 429,              // Error status code
-  headers: true,                // Send rate limit headers
-  skipSuccessfulRequests: false, // Count all requests
-  skipFailedRequests: false,    // Count failed requests
-  
-  // Custom key generator
-  keyGenerator: (req) => {
-    return req.ip; // Default: use IP address
-  },
-  
-  // Custom handler
-  handler: (req, res) => {
-    res.status(429).json({
-      error: 'Too many requests',
-      retryAfter: req.rateLimit.resetTime
-    });
-  },
-  
-  // Skip certain requests
-  skip: (req) => {
-    return req.ip === '127.0.0.1';
-  }
-}));
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Max 100 requests per window
+    message: "Too many requests", // Error message
+    statusCode: 429, // Error status code
+    headers: true, // Send rate limit headers
+    skipSuccessfulRequests: false, // Count all requests
+    skipFailedRequests: false, // Count failed requests
+
+    // Custom key generator
+    keyGenerator: (req) => {
+      return req.ip; // Default: use IP address
+    },
+
+    // Custom handler
+    handler: (req, res) => {
+      res.status(429).json({
+        error: "Too many requests",
+        retryAfter: req.rateLimit.resetTime,
+      });
+    },
+
+    // Skip certain requests
+    skip: (req) => {
+      return req.ip === "127.0.0.1";
+    },
+  })
+);
 
 // Different limits for different routes
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100
+  max: 100,
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  skipSuccessfulRequests: true
+  skipSuccessfulRequests: true,
 });
 
-app.use('/api', apiLimiter);
-app.use('/auth/login', authLimiter);
+app.use("/api", apiLimiter);
+app.use("/auth/login", authLimiter);
 ```
 
 ## Validation
@@ -772,36 +790,37 @@ app.use('/auth/login', authLimiter);
 ### Request Validation
 
 ```javascript
-const { Router, validator } = require('velocy');
+const { Router, validator } = require("velocy");
 const app = new Router();
 
 // Validate request body
-app.post('/users', 
+app.post(
+  "/users",
   validator.body({
     username: {
-      type: 'string',
+      type: "string",
       required: true,
       minLength: 3,
       maxLength: 20,
-      pattern: /^[a-zA-Z0-9_]+$/
+      pattern: /^[a-zA-Z0-9_]+$/,
     },
     email: {
-      type: 'string',
+      type: "string",
       required: true,
-      format: 'email'
+      format: "email",
     },
     age: {
-      type: 'number',
+      type: "number",
       min: 18,
-      max: 120
+      max: 120,
     },
     roles: {
-      type: 'array',
+      type: "array",
       items: {
-        type: 'string',
-        enum: ['user', 'admin', 'moderator']
-      }
-    }
+        type: "string",
+        enum: ["user", "admin", "moderator"],
+      },
+    },
   }),
   (req, res) => {
     // Request body is validated
@@ -810,24 +829,25 @@ app.post('/users',
 );
 
 // Validate query parameters
-app.get('/search',
+app.get(
+  "/search",
   validator.query({
     q: {
-      type: 'string',
+      type: "string",
       required: true,
-      minLength: 1
+      minLength: 1,
     },
     limit: {
-      type: 'number',
+      type: "number",
       default: 10,
       min: 1,
-      max: 100
+      max: 100,
     },
     offset: {
-      type: 'number',
+      type: "number",
       default: 0,
-      min: 0
-    }
+      min: 0,
+    },
   }),
   (req, res) => {
     res.json({ results: [] });
@@ -835,12 +855,13 @@ app.get('/search',
 );
 
 // Validate route parameters
-app.get('/users/:id',
+app.get(
+  "/users/:id",
   validator.params({
     id: {
-      type: 'string',
-      pattern: /^[0-9a-f]{24}$/ // MongoDB ObjectId
-    }
+      type: "string",
+      pattern: /^[0-9a-f]{24}$/, // MongoDB ObjectId
+    },
   }),
   (req, res) => {
     res.json({ userId: req.params.id });
@@ -848,17 +869,18 @@ app.get('/users/:id',
 );
 
 // Custom validation
-app.post('/register',
+app.post(
+  "/register",
   validator.custom(async (req) => {
     if (req.body.password !== req.body.confirmPassword) {
-      throw new Error('Passwords do not match');
+      throw new Error("Passwords do not match");
     }
-    
+
     const userExists = await checkUserExists(req.body.email);
     if (userExists) {
-      throw new Error('Email already registered');
+      throw new Error("Email already registered");
     }
-    
+
     return true;
   }),
   (req, res) => {
@@ -867,17 +889,18 @@ app.post('/register',
 );
 
 // Sanitization
-app.post('/comment',
+app.post(
+  "/comment",
   validator.body({
     text: {
-      type: 'string',
+      type: "string",
       required: true,
       sanitize: {
         trim: true,
         escape: true,
-        lowercase: false
-      }
-    }
+        lowercase: false,
+      },
+    },
   }),
   (req, res) => {
     res.json({ comment: req.body.text });
@@ -890,47 +913,47 @@ app.post('/comment',
 ### Enable Performance Features
 
 ```javascript
-const { Router } = require('velocy');
+const { Router } = require("velocy");
 
 // Create router with performance optimizations
 const app = new Router({
   // Caching
-  cache: true,                  // Enable route caching
-  routeCacheSize: 1000,         // Cache up to 1000 routes
-  urlCacheSize: 500,            // Cache up to 500 parsed URLs
-  
+  cache: true, // Enable route caching
+  routeCacheSize: 1000, // Cache up to 1000 routes
+  urlCacheSize: 500, // Cache up to 500 parsed URLs
+
   // Performance monitoring
   performance: {
-    enabled: true,              // Enable performance tracking
-    windowSize: 60000          // 1-minute window for metrics
+    enabled: true, // Enable performance tracking
+    windowSize: 60000, // 1-minute window for metrics
   },
-  
+
   // Object pooling
-  enablePooling: true,          // Enable object pooling
-  poolSize: 100,               // Pool size for reusable objects
-  
+  enablePooling: true, // Enable object pooling
+  poolSize: 100, // Pool size for reusable objects
+
   // Other optimizations
-  trustProxy: true,            // Trust proxy headers
-  caseSensitive: false,        // Case-insensitive routing
-  mergeParams: true,           // Merge params from parent router
-  strict: false                // Non-strict routing (trailing slash)
+  trustProxy: true, // Trust proxy headers
+  caseSensitive: false, // Case-insensitive routing
+  mergeParams: true, // Merge params from parent router
+  strict: false, // Non-strict routing (trailing slash)
 });
 
 // Monitor performance
-app.on('performance', (metrics) => {
-  console.log('Requests/sec:', metrics.requestsPerSecond);
-  console.log('Avg response time:', metrics.avgResponseTime);
-  console.log('Cache hit rate:', metrics.cacheHitRate);
+app.on("performance", (metrics) => {
+  console.log("Requests/sec:", metrics.requestsPerSecond);
+  console.log("Avg response time:", metrics.avgResponseTime);
+  console.log("Cache hit rate:", metrics.cacheHitRate);
 });
 
 // Performance hooks
-app.hook('beforeRoute', (req) => {
+app.hook("beforeRoute", (req) => {
   req.startTime = Date.now();
 });
 
-app.hook('afterRoute', (req, res) => {
+app.hook("afterRoute", (req, res) => {
   const duration = Date.now() - req.startTime;
-  res.set('X-Response-Time', `${duration}ms`);
+  res.set("X-Response-Time", `${duration}ms`);
 });
 ```
 
@@ -938,17 +961,17 @@ app.hook('afterRoute', (req, res) => {
 
 ```javascript
 // Run benchmarks
-const { benchmark } = require('velocy/benchmark');
+const { benchmark } = require("velocy/benchmark");
 
 benchmark({
   routes: app,
   requests: 10000,
   concurrent: 100,
-  warmup: 1000
-}).then(results => {
-  console.log('Throughput:', results.throughput);
-  console.log('Latency p50:', results.latency.p50);
-  console.log('Latency p99:', results.latency.p99);
+  warmup: 1000,
+}).then((results) => {
+  console.log("Throughput:", results.throughput);
+  console.log("Latency p50:", results.latency.p50);
+  console.log("Latency p99:", results.latency.p99);
 });
 ```
 
@@ -967,18 +990,18 @@ class Router {
   head(path, ...handlers)
   options(path, ...handlers)
   all(path, ...handlers)
-  
+
   // Middleware
   use(...middleware)
   use(path, ...middleware)
-  
+
   // Router composition
   merge(router)
   nest(prefix, router)
-  
+
   // WebSocket
   ws(path, handler)
-  
+
   // Settings
   set(setting, value)
   get(setting)
@@ -986,16 +1009,16 @@ class Router {
   disable(setting)
   enabled(setting)
   disabled(setting)
-  
+
   // Template engines
   engine(ext, engine)
   render(view, locals, callback)
-  
+
   // Events
   on(event, handler)
   off(event, handler)
   emit(event, ...args)
-  
+
   // Utilities
   printTree()
   getRoutes()
@@ -1028,7 +1051,7 @@ interface Request {
   stale: boolean
   subdomains: string[]
   xhr: boolean
-  
+
   // Methods
   accepts(types: string|string[]): string|false
   acceptsCharsets(charsets: string|string[]): string|false
@@ -1050,7 +1073,7 @@ interface Response {
   locals: object
   statusCode: number
   statusMessage: string
-  
+
   // Methods
   append(header: string, value: string|string[]): Response
   attachment(filename?: string): Response
@@ -1082,8 +1105,8 @@ interface Response {
 ### Complete Application Example
 
 ```javascript
-const { 
-  Router, 
+const {
+  Router,
   createServer,
   bodyParser,
   cookieParser,
@@ -1091,57 +1114,62 @@ const {
   cors,
   compression,
   rateLimit,
-  static: staticMiddleware
-} = require('velocy');
+  static: staticMiddleware,
+} = require("velocy");
 
 // Create app with optimizations
 const app = new Router({
   cache: true,
-  performance: true
+  performance: true,
 });
 
 // Global middleware
 app.use(compression());
 app.use(cors());
-app.use(cookieParser('secret'));
+app.use(cookieParser("secret"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: false
-}));
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 // Rate limiting
-app.use('/api', rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100
-}));
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  })
+);
 
 // Static files
-app.use('/public', staticMiddleware('./public'));
+app.use("/public", staticMiddleware("./public"));
 
 // View engine
-app.set('views', './views');
-app.set('view engine', 'html');
+app.set("views", "./views");
+app.set("view engine", "html");
 
 // Routes
-app.get('/', (req, res) => {
-  res.render('index', { title: 'Home' });
+app.get("/", (req, res) => {
+  res.render("index", { title: "Home" });
 });
 
-app.get('/api/users', (req, res) => {
+app.get("/api/users", (req, res) => {
   res.json({ users: [] });
 });
 
-app.post('/api/users', (req, res) => {
+app.post("/api/users", (req, res) => {
   // Create user
   res.status(201).json({ created: true });
 });
 
 // WebSocket
-app.ws('/ws', (ws, req) => {
-  ws.on('message', (msg) => {
+app.ws("/ws", (ws, req) => {
+  ws.on("message", (msg) => {
     ws.send(`Echo: ${msg}`);
   });
 });
@@ -1154,7 +1182,7 @@ app.use((err, req, res, next) => {
 // Start server
 const server = createServer(app);
 server.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
+  console.log("Server running on http://localhost:3000");
 });
 ```
 
