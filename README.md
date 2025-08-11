@@ -1,13 +1,13 @@
 # Velocy
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/ishtms/velocy/0400965766a9be07cf04d8a7bd44c2d3811e8569/assets/benchmark.webp" alt="Velocy Benchmark" />
   
   **A blazing fast, zero-dependency HTTP framework for Node.js**
   
   [![npm version](https://img.shields.io/npm/v/velocy.svg)](https://www.npmjs.com/package/velocy)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 </div>
+  <img src="https://raw.githubusercontent.com/ishtms/velocy/0400965766a9be07cf04d8a7bd44c2d3811e8569/assets/benchmark.webp" alt="Velocy Benchmark" />
 
 ## Features
 
