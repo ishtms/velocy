@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error {{status}} - Velocy Framework</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .error-container {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .error-code {
+      font-size: 6rem;
+      font-weight: bold;
+      color: var(--danger-color);
+      margin-bottom: 1rem;
+    }
+    .error-message {
+      font-size: 1.5rem;
+      color: var(--dark-color);
+      margin-bottom: 2rem;
+    }
+    .error-details {
+      background: var(--light-color);
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 2rem auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .error-stack {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚀 Velocy Framework</h1>
+      <p>High-Performance Node.js Web Framework</p>
+    </header>
+
+    <main>
+      <div class="error-container">
+        <div class="error-code">{{status}}</div>
+        <div class="error-message">{{message}}</div>
+        
+        {{#if details}}
+        <div class="error-details">
+          <h3>Error Details:</h3>
+          <p>{{details}}</p>
+        </div>
+        {{/if}}
+        
+        {{#if stack}}
+        <div class="error-details">
+          <h3>Stack Trace:</h3>
+          <div class="error-stack">{{stack}}</div>
+        </div>
+        {{/if}}
+        
+        <div style="margin-top: 2rem;">
+          <a href="/" class="button">Go Home</a>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>Powered by <strong>Velocy Framework</strong></p>
+    </footer>
+  </div>
+</body>
+</html>

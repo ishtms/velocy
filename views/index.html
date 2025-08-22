@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - Velocy Framework</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/neubrutalism.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚀 {{title}}</h1>
+      <p>{{description}}</p>
+      <p>Server Time: {{serverTime}}</p>
+      {{#if session.views}}<p>Page Views: {{session.views}}</p>{{/if}}
+    </header>
+
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/api/users">API Users</a></li>
+        <li><a href="/demo/request-info">Request Info</a></li>
+        <li><a href="/session/info">Session</a></li>
+        <li><a href="/cookies/get">Cookies</a></li>
+        <li><a href="/api/ws/stats">WebSocket Stats</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <!-- Features Section -->
+      <section class="section">
+        <h2>✨ Framework Features</h2>
+        <div class="feature-grid">
+          {{#each features}}
+          <div class="feature-card">
+            <div class="feature-icon">{{this.icon}}</div>
+            <div class="feature-title">{{this.title}}</div>
+            <div class="feature-description">{{this.description}}</div>
+          </div>
+          {{/each}}
+        </div>
+      </section>
+
+      <!-- API Endpoints Section -->
+      <section class="section">
+        <h2>🔌 API Endpoints</h2>
+        
+        <div class="card">
+          <h3>CRUD Operations</h3>
+          <ul class="endpoint-list">
+            {{#each endpoints.crud}}
+            <li class="endpoint-item">
+              <div>
+                <span class="method-badge method-{{this.method}}">{{this.method}}</span>
+                <code>{{this.path}}</code>
+              </div>
+              <div class="description">{{this.description}}</div>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Request Features</h3>
+          <ul class="endpoint-list">
+            {{#each endpoints.request}}
+            <li class="endpoint-item">
+              <div>
+                <span class="method-badge method-{{this.method}}">{{this.method}}</span>
+                <code>{{this.path}}</code>
+              </div>
+              <div class="description">{{this.description}}</div>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Response Features</h3>
+          <ul class="endpoint-list">
+            {{#each endpoints.response}}
+            <li class="endpoint-item">
+              <div>
+                <span class="method-badge method-{{this.method}}">{{this.method}}</span>
+                <code>{{this.path}}</code>
+              </div>
+              <div class="description">{{this.description}}</div>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+      </section>
+
+      <!-- Server Stats -->
+      <section class="section">
+        <h2>📊 Server Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value">{{stats.requests}}</span>
+            <span class="stat-label">Requests Served</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value">{{stats.routes}}</span>
+            <span class="stat-label">Active Routes</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value">{{stats.uptime}}</span>
+            <span class="stat-label">Uptime</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value">{{stats.memory}}</span>
+            <span class="stat-label">Memory Usage</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- API Test Panel -->
+      <section class="section">
+        <h2>🧪 API Test Panel</h2>
+        <div class="test-panel">
+          <h3>Test Any Endpoint</h3>
+          <form id="api-test-form">
+            <div class="form-group">
+              <label for="method">Method:</label>
+              <select id="method" name="method">
+                <option>GET</option>
+                <option>POST</option>
+                <option>PUT</option>
+                <option>PATCH</option>
+                <option>DELETE</option>
+                <option>HEAD</option>
+                <option>OPTIONS</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="endpoint">Endpoint:</label>
+              <input type="text" id="endpoint" name="endpoint" value="/api/echo" placeholder="/api/users">
+            </div>
+            
+            <div class="form-group" id="body" style="display: none;">
+              <label for="body-text">Request Body (JSON):</label>
+              <textarea id="body-text" name="body-text" placeholder='{"name": "John Doe", "email": "john@example.com"}'></textarea>
+            </div>
+            
+            <button type="submit">Send Request</button>
+          </form>
+          
+          <div id="response" class="response-panel">Response will appear here...</div>
+        </div>
+      </section>
+
+      <!-- WebSocket Test Panel -->
+      <section class="section">
+        <h2>🔌 WebSocket Test</h2>
+        <div class="test-panel">
+          <h3>WebSocket Connection <span id="ws-status" class="ws-status disconnected" title="Disconnected"></span></h3>
+          
+          <div class="form-group">
+            <button id="ws-connect">Connect</button>
+            <button id="ws-disconnect" disabled>Disconnect</button>
+          </div>
+          
+          <div class="form-group">
+            <label for="ws-input">Message:</label>
+            <div style="display: flex; gap: 1rem;">
+              <input type="text" id="ws-input" placeholder="Type a message...">
+              <button id="ws-send" disabled>Send</button>
+            </div>
+          </div>
+          
+          <div id="ws-messages" class="response-panel" style="max-height: 300px; overflow-y: auto;">
+            <!-- Messages will appear here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Try It Section -->
+      <section class="try-it-section">
+        <h2 style="background: var(--black); color: var(--primary-yellow); display: inline-block; padding: 0.75rem 1.5rem; border: 3px solid var(--black); border-radius: 8px; margin-bottom: 2rem;">🚀 Try It Now</h2>
+        <p style="font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem;">Test these endpoints directly in your browser:</p>
+        <div class="endpoint-list">
+          <div class="endpoint-item">
+            <div>
+              <span class="method-badge method-get">GET</span>
+              <code>/api/users</code>
+            </div>
+            <a href="/api/users" target="_blank" class="button button-dark">Open →</a>
+          </div>
+          <div class="endpoint-item">
+            <div>
+              <span class="method-badge method-get">GET</span>
+              <code>/demo/request-info</code>
+            </div>
+            <a href="/demo/request-info" target="_blank" class="button button-dark">Open →</a>
+          </div>
+          <div class="endpoint-item">
+            <div>
+              <span class="method-badge method-get">GET</span>
+              <code>/api/echo</code>
+            </div>
+            <a href="/api/echo" target="_blank" class="button button-dark">Open →</a>
+          </div>
+          <div class="endpoint-item">
+            <div>
+              <span class="method-badge method-get">GET</span>
+              <code>/session/info</code>
+            </div>
+            <a href="/session/info" target="_blank" class="button button-dark">Open →</a>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Documentation Links -->
+      <section class="section">
+        <h2>📖 Documentation</h2>
+        <div class="card">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="/files/list">Browse Files</a></li>
+            <li><a href="/demo/performance">Performance Metrics</a></li>
+            <li><a href="/demo/utils">Utility Functions</a></li>
+            <li><a href="/demo/settings">App Settings</a></li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Powered by <strong>Velocy Framework</strong> {{version}}</p>
+      <p>High-performance Node.js web framework with Express compatibility</p>
+      <p><a href="https://github.com/velocy-framework/velocy">GitHub Repository</a></p>
+    </footer>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
