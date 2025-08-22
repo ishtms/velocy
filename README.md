@@ -933,9 +933,7 @@ const app = new Router({
 
   // Other optimizations
   trustProxy: true, // Trust proxy headers
-  caseSensitive: false, // Case-insensitive routing
   mergeParams: true, // Merge params from parent router
-  strict: false, // Non-strict routing (trailing slash)
 });
 
 // Monitor performance
