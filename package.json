@@ -6,8 +6,7 @@
   "scripts": {
     "test": "node tests/run-tests.js",
     "test:single": "node",
-    "demo": "node demo-server.js",
-    "start": "node demo-server.js",
+    "demo": "node example_server.js",
     "benchmark": "node benchmarks/stress-test.js",
     "bench:stress": "node benchmarks/stress-test-client.js",
     "compare": "node benchmarks/old_vs_new.js"

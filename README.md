@@ -1,11 +1,12 @@
 # Velocy
 
 <div align="center">
-  
-  **A blazing fast, zero-dependency HTTP framework for Node.js**
-  
-  [![npm version](https://img.shields.io/npm/v/velocy.svg)](https://www.npmjs.com/package/velocy)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**A blazing fast, zero-dependency HTTP framework for Node.js**
+
+[![npm version](https://img.shields.io/npm/v/velocy.svg)](https://www.npmjs.com/package/velocy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 </div>
   <img src="https://raw.githubusercontent.com/ishtms/velocy/0400965766a9be07cf04d8a7bd44c2d3811e8569/assets/benchmark.webp" alt="Velocy Benchmark" />
 
@@ -54,6 +55,23 @@ createServer(app).listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
 ```
+
+## Example Servers
+
+Velocy includes a fully-functional server implementations to help you get started:
+
+### 📚 Example Server (`example_server.js`)
+
+A comprehensive reference implementation showcasing everything Velocy can do:
+
+- ALL framework features demonstrated
+- Every HTTP method, router type, and middleware pattern
+- Advanced WebSocket with rooms
+- View engine integration
+- Performance monitoring
+- Extensive inline documentation
+
+**Run it:** `node example_server.js`
 
 ## Table of Contents
 
@@ -344,7 +362,7 @@ app.ws("/chat", (ws, req) => {
         JSON.stringify({
           from: ws.id,
           message: msg.text,
-        })
+        }),
       );
     }
   });
@@ -434,7 +452,7 @@ app.use(
         res.set("Content-Disposition", "attachment");
       }
     },
-  })
+  }),
 );
 
 // Multiple static directories
@@ -457,7 +475,7 @@ app.use(
     strict: true, // Only accept arrays and objects
     reviver: null, // JSON.parse reviver function
     type: "application/json", // Content-type to parse
-  })
+  }),
 );
 
 // Parse URL-encoded bodies
@@ -467,7 +485,7 @@ app.use(
     limit: "10mb", // Size limit
     parameterLimit: 1000, // Max number of parameters
     type: "application/x-www-form-urlencoded",
-  })
+  }),
 );
 
 // Access parsed body
@@ -496,7 +514,7 @@ app.use(
       // Only accept images
       return part.mimetype.startsWith("image/");
     },
-  })
+  }),
 );
 
 // Handle file uploads
@@ -519,7 +537,7 @@ app.use(
   bodyParser.raw({
     type: "application/octet-stream",
     limit: "10mb",
-  })
+  }),
 );
 
 // Parse text body
@@ -528,7 +546,7 @@ app.use(
     type: "text/plain",
     defaultCharset: "utf-8",
     limit: "1mb",
-  })
+  }),
 );
 ```
 
@@ -612,7 +630,7 @@ app.use(
       // Session store (default: memory)
       checkPeriod: 86400000, // Prune expired entries every 24h
     }),
-  })
+  }),
 );
 
 // Use sessions
@@ -676,7 +694,7 @@ app.use(
     maxAge: 86400, // Preflight cache duration
     preflightContinue: false, // Pass preflight to next handler
     optionsSuccessStatus: 204, // Status for successful OPTIONS
-  })
+  }),
 );
 
 // CORS for specific routes
@@ -725,7 +743,7 @@ app.use(
       quality: 4, // Brotli quality (0-11)
       lgwin: 22, // Brotli window size
     },
-  })
+  }),
 );
 ```
 
@@ -765,7 +783,7 @@ app.use(
     skip: (req) => {
       return req.ip === "127.0.0.1";
     },
-  })
+  }),
 );
 
 // Different limits for different routes
@@ -824,7 +842,7 @@ app.post(
   (req, res) => {
     // Request body is validated
     res.json({ user: req.body });
-  }
+  },
 );
 
 // Validate query parameters
@@ -850,7 +868,7 @@ app.get(
   }),
   (req, res) => {
     res.json({ results: [] });
-  }
+  },
 );
 
 // Validate route parameters
@@ -864,7 +882,7 @@ app.get(
   }),
   (req, res) => {
     res.json({ userId: req.params.id });
-  }
+  },
 );
 
 // Custom validation
@@ -884,7 +902,7 @@ app.post(
   }),
   (req, res) => {
     res.json({ registered: true });
-  }
+  },
 );
 
 // Sanitization
@@ -903,7 +921,7 @@ app.post(
   }),
   (req, res) => {
     res.json({ comment: req.body.text });
-  }
+  },
 );
 ```
 
@@ -1131,7 +1149,7 @@ app.use(
     secret: "keyboard cat",
     resave: false,
     saveUninitialized: false,
-  })
+  }),
 );
 
 // Rate limiting
@@ -1140,7 +1158,7 @@ app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-  })
+  }),
 );
 
 // Static files
