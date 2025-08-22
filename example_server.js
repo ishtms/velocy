@@ -102,11 +102,13 @@ app.use(compression({
   threshold: 1024, // Only compress responses > 1KB
   level: 6,        // Compression level (0-9)
   filter: (req, res) => {
-    // Custom filter function
+    // Custom filter function - don't compress if client requests no compression
     if (req.headers['x-no-compression']) {
       return false;
     }
-    return compression.filter(req, res);
+    // Compress for typical text-based content types
+    const contentType = res.getHeader('Content-Type') || '';
+    return /json|text|javascript|css|html|xml/.test(contentType);
   }
 }));
 
@@ -183,6 +185,13 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   req.id = crypto.randomBytes(8).toString('hex');
   res.set('X-Request-ID', req.id);
+  next();
+});
+
+// 8. Track request count
+app.use((req, res, next) => {
+  const count = app.getSetting('requestCount') || 0;
+  app.set('requestCount', count + 1);
   next();
 });
 
@@ -1758,12 +1767,8 @@ app.get('/demo/performance', (req, res) => {
   res.json(stats);
 });
 
-// Track request count
-app.use((req, res, next) => {
-  const count = app.getSetting('requestCount') || 0;
-  app.set('requestCount', count + 1);
-  next();
-});
+// Track request count - moved to earlier in middleware stack
+// (This was interfering with route matching when placed after routes)
 
 // ==================== VIEW ENGINE & TEMPLATING ====================
 
@@ -1842,15 +1847,23 @@ app.get('/demo/async-error', async (req, res, next) => {
   }
 });
 
-// 404 handler
+// 404 handler - DISABLED because it blocks route matching in Velocy Router
+// The Velocy Router processes middleware added with app.use() before checking routes,
+// which causes all requests to return 404. This is different from Express behavior.
+// TODO: Implement a proper 404 handler that only runs after route matching fails
+/*
 app.use((req, res, next) => {
-  res.status(404).json({
-    error: 'Not Found',
-    path: req.path,
-    method: req.method,
-    timestamp: new Date()
-  });
+  // Only send 404 if response hasn't been sent yet
+  if (!res.headersSent) {
+    res.status(404).json({
+      error: 'Not Found',
+      path: req.path,
+      method: req.method,
+      timestamp: new Date()
+    });
+  }
 });
+*/
 
 // Global error handler (4 parameters)
 app.useError((err, req, res, next) => {
