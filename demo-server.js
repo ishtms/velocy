@@ -71,10 +71,18 @@ app.use(
 app.use((req, res, next) => {
   const start = Date.now();
   const originalEnd = res.end;
+  const originalStatus = res.status;
+
+  // Track status code when it's set
+  res.status = function(code) {
+    res.statusCode = code;
+    return originalStatus.call(this, code);
+  };
 
   res.end = function (...args) {
     const duration = Date.now() - start;
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+    const status = res.statusCode || 200;
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - ${status} (${duration}ms)`);
     originalEnd.apply(res, args);
   };
 
@@ -125,7 +133,7 @@ const serveUIFile = (req, res, filePath) => {
 
     res.set("Content-Type", contentType);
     res.set("Cache-Control", "no-cache");
-    res.end(data);
+    res.status(200).end(data);
   });
 };
 
@@ -445,6 +453,30 @@ app.get("/api/session", (req, res) => {
   });
 });
 
+// ==================== ROUTES LISTING ====================
+
+app.get("/api/routes", (req, res) => {
+  res.json([
+    { method: "GET", path: "/", description: "Welcome endpoint" },
+    { method: "GET", path: "/api/test", description: "Test API endpoint" },
+    { method: "POST", path: "/api/echo", description: "Echo request body" },
+    { method: "GET", path: "/api/users", description: "Get all users" },
+    { method: "POST", path: "/api/users", description: "Create new user" },
+    { method: "GET", path: "/api/users/:id", description: "Get user by ID" },
+    { method: "PUT", path: "/api/users/:id", description: "Update user" },
+    { method: "DELETE", path: "/api/users/:id", description: "Delete user" },
+    { method: "POST", path: "/api/upload", description: "File upload" },
+    { method: "GET", path: "/api/cookies", description: "Get cookies" },
+    { method: "POST", path: "/api/cookies", description: "Set cookie" },
+    { method: "DELETE", path: "/api/cookies/:name", description: "Clear cookie" },
+    { method: "POST", path: "/api/login", description: "Login" },
+    { method: "POST", path: "/api/logout", description: "Logout" },
+    { method: "GET", path: "/api/protected", description: "Protected route" },
+    { method: "GET", path: "/api/session", description: "Session info" },
+    { method: "WS", path: "/ws", description: "WebSocket endpoint" },
+  ]);
+});
+
 // ==================== WILDCARD ROUTES ====================
 
 // Static file pattern matching
@@ -496,7 +528,7 @@ app.ws("/ws", (ws, req) => {
     );
 
     // Broadcast to all clients
-    app.getWebSocketRouter().broadcast(
+    app.wsRouter.broadcast(
       JSON.stringify({
         type: "broadcast",
         data: message.toString(),

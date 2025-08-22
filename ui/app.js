@@ -12,6 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeTabs();
     initializeBodyTypeSelector();
     initializeAuthSelector();
+    
+    // Expose functions to global scope for onclick handlers
+    window.addParamRow = addParamRow;
+    window.addHeaderRow = addHeaderRow;
+    window.addFormRow = addFormRow;
+    window.addCookie = addCookie;
+    window.formatResponse = formatResponse;
+    window.copyResponse = copyResponse;
+    window.clearMessages = clearMessages;
 });
 
 // Navigation
