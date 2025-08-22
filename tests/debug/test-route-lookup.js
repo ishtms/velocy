@@ -1,4 +1,4 @@
-const { Router } = require('./index');
+const { Router } = require('../../index');
 const http = require('http');
 
 const app = new Router();

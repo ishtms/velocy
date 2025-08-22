@@ -1,6 +1,6 @@
 {
   "name": "velocy",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A blazing fast, minimal backend framework for Node.js",
   "main": "lib/index.js",
   "scripts": {
@@ -8,9 +8,9 @@
     "test:single": "node",
     "demo": "node demo-server.js",
     "start": "node demo-server.js",
-    "benchmark": "node benchmark.js",
-    "bench": "node benchmark-simple.js",
-    "compare": "node old_vs_new.js"
+    "benchmark": "node benchmarks/stress-test.js",
+    "bench:stress": "node benchmarks/stress-test-client.js",
+    "compare": "node benchmarks/old_vs_new.js"
   },
   "repository": {
     "type": "git",

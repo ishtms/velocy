@@ -1,4 +1,4 @@
-const { Router, compression } = require('./index');
+const { Router, compression } = require('../../index');
 const { Readable } = require('stream');
 const http = require('http');
 
