@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/ishtms/velocy#readme",
   "devDependencies": {
-    "velocy": "^0.0.14"
+    "velocy": "^0.0.14",
+    "ws": "^8.18.3"
   }
 }

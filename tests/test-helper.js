@@ -118,13 +118,16 @@ function makeRequest(options, body = null) {
     const client = options.protocol === 'https:' ? https : http;
     
     const req = client.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
+      let chunks = [];
+      res.on('data', chunk => chunks.push(chunk));
       res.on('end', () => {
+        const buffer = Buffer.concat(chunks);
+        // Return both buffer and string representation
         resolve({
           statusCode: res.statusCode,
           headers: res.headers,
-          body: data
+          body: buffer.toString('binary'),  // Keep backward compatibility
+          buffer: buffer  // Add buffer for binary data
         });
       });
     });
