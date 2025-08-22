@@ -113,20 +113,18 @@ router.ws('/ws/chat', (ws, req) => {
 ### Broadcasting to Rooms
 
 ```javascript
-// Broadcast to specific room
-router.room('general').broadcast({
-  type: 'announcement',
-  message: 'Server maintenance in 5 minutes'
-});
+// Room broadcasting needs to be done through WebSocketRouter
+// Note: These methods are accessed internally via the WebSocketRouter instance
+// In practice, you would typically broadcast from within a WebSocket handler:
 
-// Broadcast to room except sender
-router.room('general').broadcast(data, {
-  except: ws.id
+router.ws('/ws/chat', (ws, req) => {
+  ws.join('general');
+  
+  ws.on('message', (data) => {
+    // Broadcast to room members
+    ws.broadcast(data, 'general');
+  });
 });
-
-// Get room statistics
-const roomSize = router.room('general').size();
-const connections = router.room('general').getConnections();
 ```
 
 ## Broadcasting
@@ -134,25 +132,26 @@ const connections = router.room('general').getConnections();
 ### Global Broadcast
 
 ```javascript
-// Broadcast to all WebSocket connections
-router.broadcast({
-  type: 'system',
-  message: 'Server announcement'
-});
+// Global broadcast through WebSocket handler
+// Note: Global broadcast is typically done within WebSocket handlers
 
-// Broadcast with exceptions
-router.broadcast(data, {
-  except: [ws1.id, ws2.id]
+router.ws('/ws/admin', (ws, req) => {
+  ws.on('message', (data) => {
+    // Broadcast to all connected clients
+    // This functionality depends on your implementation
+  });
 });
 ```
 
 ### Route-specific Broadcast
 
 ```javascript
-// Broadcast to all connections on a specific route
-router.to('/ws/chat').broadcast({
-  type: 'route-message',
-  data: 'Hello chat users'
+// Route-specific broadcast is done within the route handler
+router.ws('/ws/chat', (ws, req) => {
+  // Broadcasting within this route
+  ws.on('message', (data) => {
+    // Handle broadcasting to this route's connections
+  });
 });
 ```
 
@@ -318,7 +317,20 @@ const router = new Router({
 
 ```javascript
 // Messages sent to disconnected clients are queued
-router.getWebSocketRouter().wsServer.sendTo(clientId, {
+// Message queuing is handled internally
+// When configured, messages to disconnected clients are queued automatically
+// Configuration:
+const router = new Router({
+  websocket: {
+    enableQueue: true,
+    maxQueueSize: 100
+  }
+});
+
+// Messages sent to offline clients will be queued
+// Example from within a WebSocket handler:
+router.ws('/ws/chat', (ws, req) => {
+  // Messages are queued if recipient is offline
   type: 'notification',
   message: 'You have a new message'
 });
@@ -410,7 +422,20 @@ ws.close(1011, 'Internal error');
 
 ```javascript
 // Close all connections
-router.getWebSocketRouter().closeAll(1001, 'Server shutdown');
+// Mass closure needs to be handled through your own connection tracking
+// Example implementation:
+const connections = new Set();
+
+router.ws('/ws/chat', (ws, req) => {
+  connections.add(ws);
+  
+  ws.on('close', () => {
+    connections.delete(ws);
+  });
+});
+
+// To close all:
+// connections.forEach(ws => ws.close(1001, 'Server shutdown'));
 
 // Close all in a room
 router.room('general').getConnections().forEach(ws => {
