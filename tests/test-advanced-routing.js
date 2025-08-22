@@ -287,7 +287,7 @@ runner.test('Should handle trailing slashes consistently', async () => {
   }
 });
 
-runner.test('Should handle case-sensitive routing', async () => {
+runner.test('Should handle different case routes separately', async () => {
   const app = new Router();
   
   app.get('/CaseSensitive', (req, res) => {
