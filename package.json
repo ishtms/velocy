@@ -1,6 +1,6 @@
 {
   "name": "velocy",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "A blazing fast, minimal backend framework for Node.js",
   "main": "lib/index.js",
   "scripts": {
