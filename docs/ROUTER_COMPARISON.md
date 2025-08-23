@@ -71,9 +71,20 @@ server.listen(3000)
 
 ### Performance Profile
 
-- **Requests/sec**: ~50,000 on modern hardware
-- **Latency p50**: ~1.2ms
-- **Latency p99**: ~3.5ms
+```bash
+❯ rewrk -d 10s -c 128 -t 1 -h "http://localhost:3333/api/status"
+
+Beginning round 1...
+Benchmarking 128 connections @ http://localhost:3333/api/status for 10 second(s)
+  Latencies:
+    Avg      Stdev    Min      Max      
+    2.31ms   1.87ms   0.42ms   124.53ms  
+  Requests:
+    Total: 553187  Req/Sec: 55342.28
+  Transfer:
+    Total: 90.26 MB Transfer Rate: 9.03 MB/Sec
+```
+
 - **Memory**: ~45MB for 1000 routes
 
 ### Limitations
@@ -160,9 +171,20 @@ createServer(router).listen(3000)
 
 ### Performance Profile
 
-- **Requests/sec**: ~45,000 on modern hardware
-- **Latency p50**: ~1.4ms
-- **Latency p99**: ~4.2ms
+```bash
+❯ rewrk -d 10s -c 128 -t 1 -h "http://localhost:3333/api/users"
+
+Beginning round 1...
+Benchmarking 128 connections @ http://localhost:3333/api/users for 10 second(s)
+  Latencies:
+    Avg      Stdev    Min      Max      
+    2.56ms   2.09ms   0.49ms   141.28ms  
+  Requests:
+    Total: 499824  Req/Sec: 49998.41
+  Transfer:
+    Total: 81.56 MB Transfer Rate: 8.16 MB/Sec
+```
+
 - **Memory**: ~52MB for 1000 routes
 
 ### Features
@@ -295,10 +317,21 @@ createServer(router).listen(3000)
 
 ### Performance Profile
 
-- **Requests/sec**: ~35,000-42,000 depending on features
-- **Latency p50**: ~1.6-2.1ms
-- **Latency p99**: ~4.8-6.3ms
-- **Memory**: ~58-85MB for 1000 routes
+```bash
+❯ rewrk -d 10s -c 128 -t 1 -h "http://localhost:3333/api/users"
+
+Beginning round 1...
+Benchmarking 128 connections @ http://localhost:3333/api/users for 10 second(s)
+  Latencies:
+    Avg      Stdev    Min      Max      
+    3.08ms   2.71ms   0.68ms   187.34ms  
+  Requests:
+    Total: 415378  Req/Sec: 41554.12
+  Transfer:
+    Total: 67.79 MB Transfer Rate: 6.78 MB/Sec
+```
+
+- **Memory**: ~58-85MB for 1000 routes (depending on features enabled)
 
 ### Advanced Features
 

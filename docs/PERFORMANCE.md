@@ -120,21 +120,64 @@ router.get('/api/status', (req, res) => {
 
 ## Benchmark Results
 
-### FastRouter vs Original v0.0.14
-- **Plaintext**: +3% throughput
-- **JSON**: -1% throughput (within margin of error)
-- **Overall**: Performance parity achieved
+### Test Environment
+- **Tool**: rewrk version 0.4.0
+- **Command**: `rewrk -d 10s -c 128 -t 1 -h "http://localhost:3000"`
+- **Hardware**: 8-core CPU, 16GB RAM
+- **Node.js**: v20.x LTS
 
-### Standard Router (no features enabled)
-- **Overhead**: ~12-15% vs FastRouter
-- **With caching**: ~8-10% vs FastRouter
-- **With all features**: ~20-25% vs FastRouter
+### Velocy Performance
+```
+❯ rewrk -d 10s -c 128 -t 1 -h "http://localhost:3000"
 
-### Feature Activation Costs
-- Middleware system: ~5-8% overhead
-- WebSocket support: ~2-3% overhead (only on upgrade)
-- Template engine: ~1-2% overhead (only on render)
-- Cookie parsing: ~2-3% overhead (only when cookies present)
+Beginning round 1...
+Benchmarking 128 connections @ http://localhost:3000 for 10 second(s)
+  Latencies:
+    Avg      Stdev    Min      Max      
+    1.40ms   1.14ms   0.40ms   166.78ms  
+  Requests:
+    Total: 912738  Req/Sec: 91330.40
+  Transfer:
+    Total: 161.03 MB Transfer Rate: 16.11 MB/Sec
+```
+
+### Express Performance
+```
+❯ rewrk -d 10s -c 128 -t 1 -h "http://localhost:3000"
+
+Beginning round 1...
+Benchmarking 128 connections @ http://localhost:3000 for 10 second(s)
+  Latencies:
+    Avg      Stdev    Min      Max      
+    7.78ms   7.72ms   0.83ms   582.84ms  
+  Requests:
+    Total: 164331  Req/Sec: 16438.53
+  Transfer:
+    Total: 37.61 MB Transfer Rate: 3.76 MB/Sec
+```
+
+### Performance Comparison
+
+| Framework | Req/Sec | Avg Latency | Transfer Rate | Relative Performance |
+|-----------|---------|-------------|---------------|---------------------|
+| **Velocy** | **91,330** | **1.40ms** | **16.11 MB/Sec** | **556%** |
+| Express | 16,438 | 7.78ms | 3.76 MB/Sec | 100% (baseline) |
+
+### Key Performance Metrics
+
+**Velocy is 5.56x faster than Express:**
+- **5.56x** more requests per second (91,330 vs 16,438)
+- **5.56x** lower average latency (1.40ms vs 7.78ms)
+- **4.28x** higher transfer rate (16.11 MB/Sec vs 3.76 MB/Sec)
+- **71%** lower max latency (166.78ms vs 582.84ms)
+
+### Why is Velocy So Much Faster?
+
+1. **Zero Dependencies**: No external dependencies means no overhead from abstraction layers
+2. **Object Pooling**: Reuses request/response objects to minimize garbage collection
+3. **Optimized Routing**: Trie-based routing with O(n) complexity for all route types
+4. **No Frozen Objects**: Avoids V8 deoptimizations from Object.freeze()
+5. **Direct Node.js Integration**: Works directly with Node.js http module without wrappers
 
 ## Key Optimizations
 

@@ -47,22 +47,19 @@ function createOldServer() {
  */
 function createStandardServer() {
   // Use the local version with standard Router
-  const NewVelocy = require("./index");
-  const app = new NewVelocy.Router();
+  const NewVelocy = require("../index");
+  const app = new NewVelocy.Router({
+    cache: true,
+  });
 
   // Plain text route
   app.get("/plaintext", (req, res) => {
-    res.end("Hello, World!");
+    res.send("Hello, World!");
   });
 
   // JSON route - use direct methods for fair comparison
   app.get("/json", (req, res) => {
-    const data = JSON.stringify({ message: "Hello, World!" });
-    res.writeHead(200, { 
-      "Content-Type": "application/json",
-      "Content-Length": Buffer.byteLength(data)
-    });
-    res.end(data);
+    res.json({ message: "Hello, World!" });
   });
 
   const server = NewVelocy.createServer(app);
@@ -74,7 +71,7 @@ function createStandardServer() {
  */
 function createFastServer() {
   // Use the local version with FastRouter
-  const NewVelocy = require("./index");
+  const NewVelocy = require("../index");
   const http = require("http");
   const app = new NewVelocy.FastRouter();
 
@@ -87,9 +84,9 @@ function createFastServer() {
   app.get("/json", (req, res) => {
     // Inline json response for zero overhead
     const data = JSON.stringify({ message: "Hello, World!" });
-    res.writeHead(200, { 
+    res.writeHead(200, {
       "Content-Type": "application/json",
-      "Content-Length": Buffer.byteLength(data)
+      "Content-Length": Buffer.byteLength(data),
     });
     res.end(data);
   });
@@ -103,16 +100,16 @@ function createFastServer() {
 /**
  * Run rewrk benchmark
  */
-function runRewrk(port, path, duration = 10, connections = 256, threads = 2) {
+function runRewrk(port, path, duration = 15, connections = 256, threads = 2) {
   return new Promise((resolve, reject) => {
     const url = `http://localhost:${port}${path}`;
     const args = [
-      "-t",
-      threads.toString(), // threads
-      "-c",
-      connections.toString(), // connections
       "-d",
       `${duration}s`, // duration
+      "-c",
+      connections.toString(), // connections
+      "-t",
+      threads.toString(), // threads
       "-h", // latency histogram
       url,
     ];
@@ -141,7 +138,9 @@ function runRewrk(port, path, duration = 10, connections = 256, threads = 2) {
         const stats = {};
 
         lines.forEach((line) => {
-          // Parse Req/Sec from "Total: 420194  Req/Sec: 42040.02"
+          // Parse output in rewrk format:
+          // Requests:
+          //   Total: 309699  Req/Sec: 30980.38
           if (line.includes("Req/Sec:")) {
             const match = line.match(/Req\/Sec:\s*([\d.]+)/);
             if (match) {
@@ -155,10 +154,13 @@ function runRewrk(port, path, duration = 10, connections = 256, threads = 2) {
               stats.totalRequests = parseInt(match[1]);
             }
           }
-          // Parse average latency from "Avg      Stdev    Min      Max"
+          // Parse average latency from rewrk format:
+          // Latencies:
+          //   Avg      Stdev    Min      Max
+          //   4.13ms   3.53ms   1.05ms   351.41ms
           if (line.includes("ms") && !line.includes("Latencies")) {
             const match = line.match(/([\d.]+)ms/);
-            if (match) {
+            if (match && !stats.avgLatency) {
               stats.avgLatency = parseFloat(match[1]);
             }
           }
@@ -191,8 +193,8 @@ async function runComparison() {
   console.log("  • Standard Router: Current (with Request/Response wrappers)");
   console.log("  • Fast Router: Current (zero-cost abstractions)");
   console.log("  • Test Duration: 10 seconds");
-  console.log("  • Connections: 256");
-  console.log("  • Threads: 2");
+  console.log("  • Connections: 128");
+  console.log("  • Threads: 1");
   console.log("  • Routes: /plaintext and /json\n");
 
   const results = {
@@ -276,19 +278,21 @@ async function runComparison() {
     console.log("│     Metric      │   Old (0.0.14)   │ Standard Router  │   Fast Router    │");
     console.log("├─────────────────┼──────────────────┼──────────────────┼──────────────────┤");
     console.log(
-      `│ Req/Sec         │ ${(results.old.plaintext.reqPerSec || 0).toFixed(2).padEnd(16)} │ ${(
-        results.standard.plaintext.reqPerSec || 0
-      ).toFixed(2).padEnd(16)} │ ${(results.fast.plaintext.reqPerSec || 0).toFixed(2).padEnd(16)} │`
+      `│ Req/Sec         │ ${(results.old.plaintext.reqPerSec || 0).toFixed(2).padEnd(16)} │ ${(results.standard.plaintext.reqPerSec || 0)
+        .toFixed(2)
+        .padEnd(16)} │ ${(results.fast.plaintext.reqPerSec || 0).toFixed(2).padEnd(16)} │`,
     );
     console.log(
       `│ Avg Latency     │ ${((results.old.plaintext.avgLatency || 0) + "ms").padEnd(16)} │ ${(
         (results.standard.plaintext.avgLatency || 0) + "ms"
-      ).padEnd(16)} │ ${((results.fast.plaintext.avgLatency || 0) + "ms").padEnd(16)} │`
+      ).padEnd(16)} │ ${((results.fast.plaintext.avgLatency || 0) + "ms").padEnd(16)} │`,
     );
     console.log(
       `│ Total Requests  │ ${(results.old.plaintext.totalRequests || 0).toString().padEnd(16)} │ ${(
         results.standard.plaintext.totalRequests || 0
-      ).toString().padEnd(16)} │ ${(results.fast.plaintext.totalRequests || 0).toString().padEnd(16)} │`
+      )
+        .toString()
+        .padEnd(16)} │ ${(results.fast.plaintext.totalRequests || 0).toString().padEnd(16)} │`,
     );
     console.log("└─────────────────┴──────────────────┴──────────────────┴──────────────────┘\n");
 
@@ -298,93 +302,74 @@ async function runComparison() {
     console.log("│     Metric      │   Old (0.0.14)   │ Standard Router  │   Fast Router    │");
     console.log("├─────────────────┼──────────────────┼──────────────────┼──────────────────┤");
     console.log(
-      `│ Req/Sec         │ ${(results.old.json.reqPerSec || 0).toFixed(2).padEnd(16)} │ ${(
-        results.standard.json.reqPerSec || 0
-      ).toFixed(2).padEnd(16)} │ ${(results.fast.json.reqPerSec || 0).toFixed(2).padEnd(16)} │`
+      `│ Req/Sec         │ ${(results.old.json.reqPerSec || 0).toFixed(2).padEnd(16)} │ ${(results.standard.json.reqPerSec || 0)
+        .toFixed(2)
+        .padEnd(16)} │ ${(results.fast.json.reqPerSec || 0).toFixed(2).padEnd(16)} │`,
     );
     console.log(
       `│ Avg Latency     │ ${((results.old.json.avgLatency || 0) + "ms").padEnd(16)} │ ${(
         (results.standard.json.avgLatency || 0) + "ms"
-      ).padEnd(16)} │ ${((results.fast.json.avgLatency || 0) + "ms").padEnd(16)} │`
+      ).padEnd(16)} │ ${((results.fast.json.avgLatency || 0) + "ms").padEnd(16)} │`,
     );
     console.log(
-      `│ Total Requests  │ ${(results.old.json.totalRequests || 0).toString().padEnd(16)} │ ${(
-        results.standard.json.totalRequests || 0
-      ).toString().padEnd(16)} │ ${(results.fast.json.totalRequests || 0).toString().padEnd(16)} │`
+      `│ Total Requests  │ ${(results.old.json.totalRequests || 0).toString().padEnd(16)} │ ${(results.standard.json.totalRequests || 0)
+        .toString()
+        .padEnd(16)} │ ${(results.fast.json.totalRequests || 0).toString().padEnd(16)} │`,
     );
     console.log("└─────────────────┴──────────────────┴──────────────────┴──────────────────┘\n");
 
     // Calculate improvements
     const standardPlaintextImprovement = (
-      ((results.standard.plaintext.reqPerSec - results.old.plaintext.reqPerSec) /
-        results.old.plaintext.reqPerSec) *
+      ((results.standard.plaintext.reqPerSec - results.old.plaintext.reqPerSec) / results.old.plaintext.reqPerSec) *
       100
     ).toFixed(1);
     const standardJsonImprovement = (
-      ((results.standard.json.reqPerSec - results.old.json.reqPerSec) /
-        results.old.json.reqPerSec) *
+      ((results.standard.json.reqPerSec - results.old.json.reqPerSec) / results.old.json.reqPerSec) *
       100
     ).toFixed(1);
-    
+
     const fastPlaintextImprovement = (
-      ((results.fast.plaintext.reqPerSec - results.old.plaintext.reqPerSec) /
-        results.old.plaintext.reqPerSec) *
+      ((results.fast.plaintext.reqPerSec - results.old.plaintext.reqPerSec) / results.old.plaintext.reqPerSec) *
       100
     ).toFixed(1);
-    const fastJsonImprovement = (
-      ((results.fast.json.reqPerSec - results.old.json.reqPerSec) /
-        results.old.json.reqPerSec) *
-      100
-    ).toFixed(1);
+    const fastJsonImprovement = (((results.fast.json.reqPerSec - results.old.json.reqPerSec) / results.old.json.reqPerSec) * 100).toFixed(
+      1,
+    );
 
     console.log(colors.bright + colors.green + "📈 Performance vs Old Version (0.0.14):" + colors.reset);
     console.log("\n" + colors.bright + "Standard Router:" + colors.reset);
     console.log(
-      `  • Plaintext: ${standardPlaintextImprovement > 0 ? colors.green + "+" : colors.red}${standardPlaintextImprovement}%${
-        colors.reset
-      }`
+      `  • Plaintext: ${standardPlaintextImprovement > 0 ? colors.green + "+" : colors.red}${standardPlaintextImprovement}%${colors.reset}`,
     );
-    console.log(
-      `  • JSON: ${standardJsonImprovement > 0 ? colors.green + "+" : colors.red}${standardJsonImprovement}%${colors.reset}`
-    );
-    
+    console.log(`  • JSON: ${standardJsonImprovement > 0 ? colors.green + "+" : colors.red}${standardJsonImprovement}%${colors.reset}`);
+
     console.log("\n" + colors.bright + "Fast Router:" + colors.reset);
     console.log(
-      `  • Plaintext: ${fastPlaintextImprovement > 0 ? colors.green + "+" : colors.red}${fastPlaintextImprovement}%${
-        colors.reset
-      }`
+      `  • Plaintext: ${fastPlaintextImprovement > 0 ? colors.green + "+" : colors.red}${fastPlaintextImprovement}%${colors.reset}`,
     );
-    console.log(
-      `  • JSON: ${fastJsonImprovement > 0 ? colors.green + "+" : colors.red}${fastJsonImprovement}%${colors.reset}\n`
-    );
+    console.log(`  • JSON: ${fastJsonImprovement > 0 ? colors.green + "+" : colors.red}${fastJsonImprovement}%${colors.reset}\n`);
 
     // Compare Fast vs Standard
     const fastVsStandardPlaintext = (
-      ((results.fast.plaintext.reqPerSec - results.standard.plaintext.reqPerSec) /
-        results.standard.plaintext.reqPerSec) *
+      ((results.fast.plaintext.reqPerSec - results.standard.plaintext.reqPerSec) / results.standard.plaintext.reqPerSec) *
       100
     ).toFixed(1);
     const fastVsStandardJson = (
-      ((results.fast.json.reqPerSec - results.standard.json.reqPerSec) /
-        results.standard.json.reqPerSec) *
+      ((results.fast.json.reqPerSec - results.standard.json.reqPerSec) / results.standard.json.reqPerSec) *
       100
     ).toFixed(1);
 
     console.log(colors.bright + colors.yellow + "🔄 Fast Router vs Standard Router:" + colors.reset);
     console.log(
-      `  • Plaintext: ${fastVsStandardPlaintext > 0 ? colors.green + "+" : colors.red}${fastVsStandardPlaintext}%${
-        colors.reset
-      }`
+      `  • Plaintext: ${fastVsStandardPlaintext > 0 ? colors.green + "+" : colors.red}${fastVsStandardPlaintext}%${colors.reset}`,
     );
-    console.log(
-      `  • JSON: ${fastVsStandardJson > 0 ? colors.green + "+" : colors.red}${fastVsStandardJson}%${colors.reset}\n`
-    );
+    console.log(`  • JSON: ${fastVsStandardJson > 0 ? colors.green + "+" : colors.red}${fastVsStandardJson}%${colors.reset}\n`);
 
     // Summary
     console.log(colors.bright + colors.white + "📋 Summary:" + colors.reset);
     console.log("  • Old Version (0.0.14): Baseline performance");
-    console.log(`  • Standard Router: Full features with ${standardPlaintextImprovement < 0 ? 'some overhead' : 'comparable performance'}`);
-    console.log(`  • Fast Router: Zero-cost abstractions ${fastPlaintextImprovement > 0 ? 'exceeding' : 'matching'} baseline\n`);
+    console.log(`  • Standard Router: Full features with ${standardPlaintextImprovement < 0 ? "some overhead" : "comparable performance"}`);
+    console.log(`  • Fast Router: Zero-cost abstractions ${fastPlaintextImprovement > 0 ? "exceeding" : "matching"} baseline\n`);
 
     console.log(colors.bright + colors.blue + "█".repeat(80) + colors.reset);
     console.log(colors.bright + colors.white + "                         COMPARISON COMPLETE!" + colors.reset);

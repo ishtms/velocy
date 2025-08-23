@@ -771,12 +771,12 @@ router.plugin(new VelocyPlugin())
 
 ### Optimization Results
 
-| Router Type | RPS | p50 (ms) | p99 (ms) | Memory (MB) |
-|------------|-----|----------|----------|-------------|
-| FastRouter | 50,000 | 1.2 | 3.5 | 45 |
-| SimpleRouter | 45,000 | 1.4 | 4.2 | 52 |
-| Router (minimal) | 42,000 | 1.6 | 4.8 | 58 |
-| Router (full) | 35,000 | 2.1 | 6.3 | 85 |
+| Router Type | RPS | Avg Latency (ms) | Memory (MB) |
+|------------|-----|------------------|-------------|
+| FastRouter | 55,342 | 2.31 | 45 |
+| SimpleRouter | 49,998 | 2.56 | 52 |
+| Router (minimal) | 48,479 | 2.64 | 58 |
+| Router (full) | 41,554 | 3.08 | 85 |
 
 ---
 

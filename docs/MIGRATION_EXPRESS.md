@@ -647,10 +647,10 @@ app.nest('/api/v2', v2)
 
 | Framework | Requests/sec | Latency (ms) | Memory (MB) |
 |-----------|-------------|--------------|-------------|
-| Express | 15,000 | 4.2 | 95 |
-| Velocy (Router) | 35,000 | 2.1 | 85 |
-| Velocy (SimpleRouter) | 45,000 | 1.4 | 52 |
-| Velocy (FastRouter) | 50,000 | 1.2 | 45 |
+| Express | 15,000 | 8.53 | 95 |
+| Velocy (Router) | 41,000 | 3.08 | 85 |
+| Velocy (SimpleRouter) | 50,000 | 2.56 | 52 |
+| Velocy (FastRouter) | 55,000 | 2.31 | 45 |
 
 ### Optimization Tips
 

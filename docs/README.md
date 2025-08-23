@@ -105,9 +105,9 @@ docs/
 
 ### Performance First
 
-- **FastRouter**: 50,000+ requests/second
-- **SimpleRouter**: 45,000+ requests/second
-- **Router**: 35,000+ requests/second
+- **FastRouter**: 55,000+ requests/second
+- **SimpleRouter**: 50,000+ requests/second
+- **Router**: 41,000+ requests/second
 - Lazy loading of features
 - Optimized route matching
 
@@ -178,12 +178,12 @@ createServer(app).listen(3000);
 
 ## 📊 Performance Comparison
 
-| Router           | Use Case              | Performance  | Memory |
-| ---------------- | --------------------- | ------------ | ------ |
-| **FastRouter**   | Microservices, APIs   | 50,000 req/s | ~45MB  |
-| **SimpleRouter** | REST APIs, Basic apps | 45,000 req/s | ~52MB  |
-| **Router**       | Full applications     | 35,000 req/s | ~85MB  |
-| **Express**      | Comparison            | 15,000 req/s | ~95MB  |
+| Framework        | Use Case              | Performance   | Latency | Transfer Rate |
+| ---------------- | --------------------- | ------------- | ------- | ------------- |
+| **Velocy**       | High-performance APIs | 91,330 req/s  | 1.40ms  | 16.11 MB/Sec  |
+| **Express**      | Traditional Node.js   | 16,438 req/s  | 7.78ms  | 3.76 MB/Sec   |
+
+**Velocy is 5.56x faster than Express** with significantly lower latency and higher throughput.
 
 ## 🔧 Configuration Examples
 

@@ -107,13 +107,13 @@ app.all('/api/*', handler)      // Any method, any /api/* path
 // Need maximum performance? Use FastRouter
 const { FastRouter } = require('velocy')
 const app = new FastRouter()
-// ✅ 50,000+ requests/sec
+// ✅ 55,000+ requests/sec
 // ❌ No middleware, WebSockets, or helpers
 
 // Need basic features? Use SimpleRouter
 const { SimpleRouter } = require('velocy')
 const app = new SimpleRouter()
-// ✅ 45,000+ requests/sec
+// ✅ 50,000+ requests/sec
 // ✅ Basic middleware
 // ❌ No WebSockets or templates
 
@@ -121,7 +121,7 @@ const app = new SimpleRouter()
 const { Router } = require('velocy')
 const app = new Router()
 // ✅ All features
-// ✅ 35,000+ requests/sec
+// ✅ 41,000+ requests/sec
 // ✅ WebSockets, templates, sessions, etc.
 ```
 

@@ -23,6 +23,22 @@
 - 🗜️ **Compression** - Gzip, deflate, and brotli compression support
 - 🍪 **Cookie Management** - Cookie parsing and signing capabilities
 
+## Performance
+
+**Velocy is 5.56x faster than Express** based on our latest benchmarks:
+
+| Framework | Req/Sec | Avg Latency | Transfer Rate |
+|-----------|---------|-------------|---------------|
+| **Velocy** | 91,330 | 1.40ms | 16.11 MB/s |
+| Express | 16,438 | 7.78ms | 3.76 MB/s |
+
+- **5.56x** more requests per second
+- **5.56x** lower average latency
+- **4.28x** higher transfer rate
+- **Zero dependencies** for maximum efficiency
+
+*Benchmarked using rewrk with 128 connections on Node.js v20.x LTS*
+
 ## Installation
 
 ```bash
