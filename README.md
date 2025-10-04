@@ -1227,9 +1227,9 @@ MIT © [Ishtmeet Singh](https://github.com/ishtms)
 
 ## Support
 
-- 📧 Email: ish.rissam@gmail.com
-- 🐛 Issues: [GitHub Issues](https://github.com/ishtms/velocy/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/ishtms/velocy/discussions)
+- Email: hello@thenodebook.com
+- Issues: [GitHub Issues](https://github.com/ishtms/velocy/issues)
+- Discussions: [GitHub Discussions](https://github.com/ishtms/velocy/discussions)
 
 ## Links
 
@@ -1240,5 +1240,5 @@ MIT © [Ishtmeet Singh](https://github.com/ishtms)
 ---
 
 <div align="center">
-  Made with ❤️ by the Velocy team
+  Made with ❤️ by Ishtmeet
 </div>
