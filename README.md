@@ -12,16 +12,16 @@
 
 ## Features
 
-- 🚀 **Blazing Fast** - Radix tree-based router with performance optimizations
-- 📦 **Zero Dependencies** - Built entirely with Node.js built-in modules
-- 🛣️ **Advanced Routing** - Dynamic parameters, wildcards, and pattern matching
-- 🔌 **WebSocket Support** - Full WebSocket implementation with rooms and broadcasting
-- 🎯 **Middleware System** - Express-style middleware with async support
-- 🎨 **Template Engines** - Built-in template engine support with caching
-- 🔒 **Security Features** - CORS, rate limiting, session management, and validation
-- 📊 **Performance Monitoring** - Built-in performance tracking and optimization
-- 🗜️ **Compression** - Gzip, deflate, and brotli compression support
-- 🍪 **Cookie Management** - Cookie parsing and signing capabilities
+- **Blazing Fast** - Radix tree-based router with performance optimizations
+- **Zero Dependencies** - Built entirely with Node.js built-in modules
+- **Advanced Routing** - Dynamic parameters, wildcards, and pattern matching
+- **WebSocket Support** - Full WebSocket implementation with rooms and broadcasting
+- **Middleware System** - Express-style middleware with async support
+- **Template Engines** - Built-in template engine support with caching
+- **Security Features** - CORS, rate limiting, session management, and validation
+- **Performance Monitoring** - Built-in performance tracking and optimization
+- **Compression** - Gzip, deflate, and brotli compression support
+- **Cookie Management** - Cookie parsing and signing capabilities
 
 ## Performance
 
