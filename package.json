@@ -3,9 +3,19 @@
   "version": "0.3.0",
   "description": "A blazing fast, minimal backend framework for Node.js",
   "main": "lib/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=26 <27"
+  },
+  "files": [
+    "index.js",
+    "lib/**/*.js",
+    "docs/**/*.md"
+  ],
   "scripts": {
     "test": "node tests/run-tests.js",
     "test:single": "node",
+    "check:package": "node scripts/check-package.js",
     "demo": "node example_server.js",
     "benchmark": "node benchmarks/stress-test.js",
     "bench:stress": "node benchmarks/stress-test-client.js",

@@ -178,24 +178,27 @@ const { cookieParser } = require('velocy/middleware')
 router.use(cookieParser())
 
 // With secret for signed cookies
-router.use(cookieParser('secret-key'))
-
-// With options
-router.use(cookieParser('secret-key', {
-  decode: decodeURIComponent,  // Custom decode function
-  signed: true                  // Parse signed cookies
-}))
+router.use(cookieParser(process.env.COOKIE_SECRET))
 ```
+
+Choose one configuration above. `cookieParser(secret?)` accepts a non-empty
+string or Buffer, not an options object; there is no custom decoder option.
+The middleware configures both request verification and response signing, so
+`res.cookie(..., { signed: true })` works without a Router secret. If a Router
+`cookieSecret` is also configured it must match. Register this middleware before
+accessing cookie getters. Repeating the same configuration is safe; conflicting
+secrets fail instead of minting cookies that cannot be verified.
 
 #### Working with Cookies
 
 ```javascript
-router.use(cookieParser('my-secret'))
+router.use(cookieParser(process.env.COOKIE_SECRET))
 
 router.get('/', (req, res) => {
   // Access cookies
-  console.log(req.cookies)        // All cookies
-  console.log(req.signedCookies)  // Signed cookies only
+  const unsignedCookies = req.cookies      // Untrusted unsigned values
+  const verifiedCookies = req.signedCookies // Verified signatures only
+  // Do not log cookies or signing material.
   
   // Set cookies
   res.cookie('name', 'value', {
@@ -205,7 +208,7 @@ router.get('/', (req, res) => {
     httpOnly: true,    // Not accessible via JavaScript
     maxAge: 900000,    // Milliseconds
     expires: new Date(Date.now() + 900000),
-    sameSite: 'strict' // CSRF protection
+    sameSite: 'strict' // Defense in depth; application CSRF protection is still needed
   })
   
   // Set signed cookie
@@ -222,7 +225,7 @@ router.get('/', (req, res) => {
 
 ```javascript
 // Cookie-based authentication
-router.use(cookieParser('secret'))
+router.use(cookieParser(process.env.COOKIE_SECRET))
 
 router.post('/login', (req, res) => {
   // Authenticate user...
@@ -382,6 +385,14 @@ router.use(cors({
 ---
 
 ### Compression
+
+Compression preserves streaming write callbacks and pipe backpressure. Producers
+must stop on `write() === false` until `drain`; output pauses on socket pressure.
+Small writes below the threshold are accepted into a bounded negotiation buffer;
+their callbacks are not proof of remote delivery. Use `flushHeaders()` only when
+ready to commit the response, and persist session state before flushing/streaming.
+Mixing `write(prefix)` with `send(suffix)`/`json(suffix)` is supported without an
+incorrect suffix-only automatic Content-Length.
 
 Compress response bodies for all requests using gzip, deflate, or brotli.
 
@@ -880,6 +891,15 @@ router.post('/cart/add', (req, res) => {
 
 ### Static Files
 
+Serve a trusted, read-only/immutable published tree, separated from uploads.
+`setHeaders(filePath, stats, res)` is a header callback, not a body producer.
+If it throws before any new body write, static can recover or fall through while
+preserving earlier middleware's buffered bytes. If it writes body data (through
+the wrapper or native response) and then fails, the connection is aborted—even
+when compression has not yet flushed those bytes. This prevents a failed entity
+from being spliced into error/downstream responses. Header-only EACCES fallthrough
+still restores upstream headers, and descriptor ownership/cleanup is unchanged.
+
 Serve static files from a directory.
 
 #### Basic Usage
@@ -926,7 +946,7 @@ router.use(static('public', {
   lastModified: true,
   
   // Set custom headers
-  setHeaders: (res, path, stat) => {
+  setHeaders: (path, stat, res) => {
     res.setHeader('X-Served-By', 'Velocy')
     
     // Set cache headers based on file type
@@ -973,7 +993,7 @@ if (process.env.NODE_ENV === 'production') {
     etag: true,
     maxAge: '1y',  // Cache for 1 year
     immutable: true,
-    setHeaders: (res, path) => {
+    setHeaders: (path, stat, res) => {
       // Versioned assets can be cached forever
       if (path.match(/\.[0-9a-f]{8}\./)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
@@ -1008,7 +1028,7 @@ router.use('/private', (req, res, next) => {
 
 // Custom cache headers by file type
 router.use(static('public', {
-  setHeaders: (res, path) => {
+  setHeaders: (path, stat, res) => {
     const ext = path.split('.').pop()
     
     const cacheRules = {

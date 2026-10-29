@@ -415,6 +415,187 @@ runner.test('Should handle custom mime types', async () => {
 });
 
 // Run the tests
+runner.test('Should not serve symbolic links', async () => {
+  const tempDir = createTempDir();
+  try {
+    const root = path.join(tempDir, 'root');
+    fs.mkdirSync(root);
+    fs.writeFileSync(path.join(tempDir, 'outside.txt'), 'private');
+    fs.symlinkSync(path.join(tempDir, 'outside.txt'), path.join(root, 'link.txt'));
+    const app = new Router();
+    app.use(staticMiddleware(root, { fallthrough: false }));
+    const server = await createTestServer(app);
+    try {
+      const response = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: '/link.txt', method: 'GET' });
+      assertEqual(response.statusCode, 403, 'symbolic link must be rejected');
+      assert(!response.body.includes('private'), 'outside content must not be returned');
+    } finally {
+      await server.close();
+    }
+  } finally {
+    cleanupTempDir(tempDir);
+  }
+});
+
+runner.test('Should reject symlinked directories, indexes and compressed files', async () => {
+  const tempDir = createTempDir();
+  try {
+    const root = path.join(tempDir, 'root');
+    const outside = path.join(tempDir, 'outside');
+    fs.mkdirSync(root);
+    fs.mkdirSync(outside);
+    fs.writeFileSync(path.join(outside, 'secret'), 'private');
+    fs.writeFileSync(path.join(root, 'asset.txt'), 'public');
+    fs.mkdirSync(path.join(root, 'directory'));
+    fs.symlinkSync(outside, path.join(root, 'linked-dir'), 'dir');
+    fs.symlinkSync(path.join(outside, 'secret'), path.join(root, 'directory', 'index.html'));
+    fs.symlinkSync(path.join(outside, 'secret'), path.join(root, 'asset.txt.gz'));
+    const app = new Router();
+    app.use(staticMiddleware(root, { fallthrough: false }));
+    const server = await createTestServer(app);
+    try {
+      for (const [url, headers] of [['/linked-dir/secret', {}], ['/directory/', {}], ['/asset.txt', { 'accept-encoding': 'gzip' }]]) {
+        const response = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: url, method: 'GET', headers });
+        assertEqual(response.statusCode, 403, `${url} must be rejected`);
+        assert(!response.body.includes('private'), `${url} leaked outside content`);
+      }
+    } finally {
+      await server.close();
+    }
+  } finally {
+    cleanupTempDir(tempDir);
+  }
+});
+
+runner.test('Should reject symlinked extension and Brotli candidates', async () => {
+  const tempDir = createTempDir();
+  try {
+    const root = path.join(tempDir, 'root');
+    fs.mkdirSync(root);
+    const secret = path.join(tempDir, 'secret');
+    fs.writeFileSync(secret, 'private');
+    fs.writeFileSync(path.join(root, 'asset'), 'public');
+    fs.symlinkSync(secret, path.join(root, 'page.html'));
+    fs.symlinkSync(secret, path.join(root, 'asset.br'));
+    const app = new Router();
+    app.use(staticMiddleware(root, { fallthrough: false, extensions: ['.html'] }));
+    const server = await createTestServer(app);
+    try {
+      for (const [url, headers] of [['/page', {}], ['/asset', { 'accept-encoding': 'br' }]]) {
+        const response = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: url, method: 'GET', headers });
+        assertEqual(response.statusCode, 403);
+        assert(!response.body.includes('private'));
+      }
+    } finally {
+      await server.close();
+    }
+  } finally {
+    cleanupTempDir(tempDir);
+  }
+});
+
+runner.test('Should omit symbolic links from directory listings', async () => {
+  const tempDir = createTempDir();
+  try {
+    fs.writeFileSync(path.join(tempDir, 'visible.txt'), 'public');
+    fs.symlinkSync(path.join(tempDir, 'visible.txt'), path.join(tempDir, 'linked.txt'));
+    const app = new Router();
+    app.use(staticMiddleware(tempDir, { index: false, directoryListing: true, fallthrough: false }));
+    const server = await createTestServer(app);
+    try {
+      const response = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: '/', method: 'GET' });
+      assertEqual(response.statusCode, 200);
+      assertIncludes(response.body, 'visible.txt');
+      assert(!response.body.includes('linked.txt'));
+    } finally {
+      await server.close();
+    }
+  } finally {
+    cleanupTempDir(tempDir);
+  }
+});
+
+runner.test('Should reject a symbolic-link static root', async () => {
+  const tempDir = createTempDir();
+  try {
+    const actual = path.join(tempDir, 'actual');
+    fs.mkdirSync(actual);
+    fs.writeFileSync(path.join(actual, 'file.txt'), 'private');
+    const root = path.join(tempDir, 'root');
+    fs.symlinkSync(actual, root, 'dir');
+    const app = new Router();
+    app.use(staticMiddleware(root, { fallthrough: false }));
+    const server = await createTestServer(app);
+    try {
+      const response = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: '/file.txt', method: 'GET' });
+      assertEqual(response.statusCode, 403);
+      assert(!response.body.includes('private'));
+    } finally {
+      await server.close();
+    }
+  } finally {
+    cleanupTempDir(tempDir);
+  }
+});
+
+runner.test('Should pass rejected symlinks to downstream middleware when fallthrough is enabled', async () => {
+  const tempDir = createTempDir();
+  try {
+    fs.writeFileSync(path.join(tempDir, 'file.txt'), 'private');
+    fs.symlinkSync(path.join(tempDir, 'file.txt'), path.join(tempDir, 'link.txt'));
+    const app = new Router();
+    app.use((req, res, next) => {
+      res.set('Cache-Control', 'private, max-age=60');
+      res.set('ETag', '"upstream"');
+      res.set('X-Upstream', 'retained');
+      res._nativeResponse.setHeader('Content-Disposition', 'inline');
+      return next();
+    });
+    app.use(staticMiddleware(tempDir));
+    app.get('/link.txt', (req, res) => res.status(200).send('<h1>downstream</h1>'));
+    const server = await createTestServer(app);
+    try {
+      const response = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: '/link.txt', method: 'GET' });
+      assertEqual(response.statusCode, 200);
+      assertEqual(response.body, '<h1>downstream</h1>');
+      assertEqual(response.headers['content-type'], 'text/html; charset=utf-8');
+      assertEqual(response.headers['cache-control'], 'private, max-age=60');
+      assertEqual(response.headers.etag, '"upstream"');
+      assertEqual(response.headers['x-upstream'], 'retained');
+      assertEqual(response.headers['content-disposition'], 'inline');
+    } finally {
+      await server.close();
+    }
+  } finally {
+    cleanupTempDir(tempDir);
+  }
+});
+
+runner.test('Should serve empty files and HEAD responses without stream offset errors', async () => {
+  const tempDir = createTempDir();
+  try {
+    fs.writeFileSync(path.join(tempDir, 'empty.txt'), '');
+    fs.writeFileSync(path.join(tempDir, 'file.txt'), 'public');
+    const app = new Router();
+    app.use(staticMiddleware(tempDir, { fallthrough: false }));
+    const server = await createTestServer(app);
+    try {
+      const empty = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: '/empty.txt', method: 'GET' });
+      assertEqual(empty.statusCode, 200);
+      assertEqual(empty.headers['content-length'], '0');
+      assertEqual(empty.body, '');
+      const head = await makeRequest({ hostname: '127.0.0.1', port: server.port, path: '/file.txt', method: 'HEAD' });
+      assertEqual(head.statusCode, 200);
+      assertEqual(head.headers['content-length'], '6');
+      assertEqual(head.body, '');
+    } finally {
+      await server.close();
+    }
+  } finally {
+    cleanupTempDir(tempDir);
+  }
+});
+
 runner.run().then(success => {
   process.exit(success ? 0 : 1);
 });

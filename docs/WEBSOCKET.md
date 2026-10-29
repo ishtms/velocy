@@ -2,6 +2,10 @@
 
 Comprehensive WebSocket support for the Velocy framework, built using only Node.js built-in modules.
 
+Fragmented messages are limited to 1,024 non-empty fragments and to the configured `maxPayloadSize` in aggregate. Exceeding either limit closes the connection with code 1009.
+
+Client frames must be masked; unmasked frames are rejected with close code 1002, including from previously tolerated noncompliant clients.
+
 ## Features
 
 - **RFC 6455 Compliant**: Full WebSocket protocol implementation

@@ -53,7 +53,7 @@ new Router(options)
 - `websocket` {Object} - WebSocket configuration
   - `websocket.perMessageDeflate` {boolean} - Enable compression
   - `websocket.maxPayload` {number} - Maximum payload size
-- `trustProxy` {boolean} - Trust proxy headers (default: false)
+- `trustProxy` {boolean|Function} - Trust forwarding headers from the immediate peer (default: false). A predicate receives the socket IP and must return `true`. The serving Router applies this policy to simple, middleware and nested routes; nested Router constructor settings are not inherited during route composition. The trusted proxy must sanitize forwarding headers. Session middleware's `proxy` option is configured separately.
 - `routeCacheSize` {number} - Route cache size (default: 1000)
 
 #### Methods
@@ -558,11 +558,20 @@ Parse cookies from request headers.
 ```javascript
 const { cookieParser } = require('velocy/middleware')
 
-router.use(cookieParser({
-  decode: decodeURIComponent,  // Custom decode function
-  secret: 'secret-key'          // Secret for signed cookies
-}))
+router.use(cookieParser(process.env.COOKIE_SECRET))
+
+router.get('/preferences', (req, res) => {
+  res.cookie('theme', 'dark', { signed: true })
+  res.json({ theme: req.signedCookies.theme || null })
+})
 ```
+
+`cookieParser(secret?)` accepts an optional non-empty string or Buffer, not an
+options object. The supplied secret configures request verification and response
+signing for this request; no Router `cookieSecret` is required. If both are set,
+they must match. Register before reading cookie getters. Unsigned values are in
+`req.cookies`; only verified values are in `req.signedCookies`. Cookie values are
+URI decoded (literal `+` is preserved); custom decoder options are not supported.
 
 ### cors
 
@@ -586,16 +595,23 @@ router.use(cors({
 
 Compress responses using gzip, deflate, or brotli.
 
+Streaming writes retain Node's callback overloads, boolean backpressure result,
+and `drain` behavior. Wait for `drain` when `write()` returns false, or use `pipe()`.
+Compressed output pauses when the socket is full; disconnect stops compression.
+Before the non-negative integer `threshold` is reached, callbacks acknowledge
+acceptance into a bounded negotiation buffer, not delivery to the client.
+Identity/precompressed responses commit their selected status/headers before bytes.
+After a streaming write, `send()`/`json()` do not add a length describing only the
+final suffix. Explicit header flushing commits the chosen representation early.
+
 ```javascript
 const { compression } = require('velocy/middleware')
 
 router.use(compression({
   threshold: 1024,           // Minimum size to compress (bytes)
   level: 6,                  // Compression level (1-9)
-  memLevel: 8,               // Memory level (1-9)
-  strategy: 0,               // Compression strategy
-  filter: (req, res) => true, // Custom filter function
-  encoding: 'gzip'           // Default encoding
+  gzip: { memLevel: 8, strategy: 0 }, // Gzip-specific tuning
+  filter: (req, res) => true // Custom filter; encoding is negotiated from Accept-Encoding
 }))
 ```
 
@@ -811,13 +827,14 @@ Create HTTP server with router.
 const { createServer } = require('velocy')
 
 const server = createServer(router, {
-  port: 3000,
-  host: 'localhost',
-  backlog: 511
+  headersTimeout: 30_000,
+  requestTimeout: 120_000
 })
 
-server.listen(3000)
+server.listen(3000, 'localhost')
 ```
+
+The second argument is passed to Node.js `http.createServer`; listener address and backlog belong to `server.listen`.
 
 
 
@@ -833,7 +850,7 @@ interface RouterOptions {
   performance?: boolean | PerformanceOptions
   cookieSecret?: string
   websocket?: WebSocketOptions
-  trustProxy?: boolean
+  trustProxy?: boolean | ((peer: string | undefined) => boolean)
   routeCacheSize?: number
 }
 

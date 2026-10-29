@@ -1,0 +1,16 @@
+# package.json files is the publication boundary; keep local material out too.
+node_modules/
+tests/
+scripts/
+benchmarks/
+examples/
+public/
+ui/
+views/
+AGENTS.md
+CLAUDE.md
+**/.DS_Store
+**/.env*
+**/*.pem
+**/*.key
+*.tgz

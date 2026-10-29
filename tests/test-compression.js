@@ -390,6 +390,25 @@ runner.test('Should handle no Accept-Encoding header', async () => {
 });
 
 // Run the tests
+runner.test('Should preserve explicit status and mixed-case headers through compression', async () => {
+  const app = new Router();
+  app.use(compression({ threshold: 0 }));
+  app.get('/denied', (_req, res) => {
+    res.set('content-type', 'text/plain');
+    res.statusCode = 401;
+    res.send('Access denied');
+  });
+  const server = await createTestServer(app);
+  try {
+    const response = await makeRequest({ hostname: '127.0.0.1', port: server.port,
+      path: '/denied', method: 'GET', headers: { 'Accept-Encoding': 'gzip' } });
+    assertEqual(response.statusCode, 401);
+    assertEqual(response.headers['content-type'], 'text/plain');
+    assertEqual(response.headers['content-encoding'], 'gzip');
+    assertEqual(zlib.gunzipSync(response.buffer).toString(), 'Access denied');
+  } finally { await server.close(); }
+});
+
 runner.run().then(success => {
   process.exit(success ? 0 : 1);
 });

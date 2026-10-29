@@ -62,13 +62,13 @@ runner.test('Should limit requests per window', async () => {
   }
 });
 
-runner.test('Should track rate limits per IP', async () => {
+runner.test('Should track rate limits per IP from an explicitly trusted proxy', async () => {
   const app = new Router();
   
   app.use(rateLimit({
     windowMs: 1000,
     max: 2,
-    keyGenerator: (req) => req.ip || req.connection.remoteAddress
+    trustProxy: (address) => address === '127.0.0.1'
   }));
   
   app.get('/test', (req, res) => {
@@ -104,8 +104,8 @@ runner.test('Should track rate limits per IP', async () => {
     assertEqual(response2.statusCode, 200);
     
     // Both IPs should have independent limits
-    assert(response1.headers['x-ratelimit-remaining'], '1');
-    assert(response2.headers['x-ratelimit-remaining'], '1');
+    assertEqual(response1.headers['x-ratelimit-remaining'], '1');
+    assertEqual(response2.headers['x-ratelimit-remaining'], '1');
   } finally {
     await server.close();
   }

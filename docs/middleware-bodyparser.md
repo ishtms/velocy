@@ -6,7 +6,7 @@ A no-deps body parsing middleware for the Velocy framework that handles JSON, UR
 
 - **Zero Dependencies**: Uses only Node.js built-in modules
 - **Multiple Content Types**: JSON, URL-encoded, multipart/form-data, raw/text
-- **Streaming Support**: Efficient memory usage with configurable limits
+- **Bounded Body Collection**: Configurable byte, form-structure, and multipart limits
 - **Extended URL Encoding**: Support for nested objects and arrays
 - **File Uploads**: Handles multipart file uploads with memory/disk storage
 - **Security**: Size limits, verification hooks, and error handling
@@ -53,12 +53,19 @@ bodyParser({
   urlencodedLimit: "100kb", // Size limit for URL-encoded bodies
   extended: true, // Support nested objects/arrays (default: true)
   parameterLimit: 1000, // Max number of parameters
+  depthLimit: 32, // Max bracket segments in extended URL-encoded keys
+  arrayLimit: 1000, // Max extended-form array length/index + 1
 
   // Multipart parsing
   multipart: true, // Enable multipart parsing (default: true)
   multipartLimit: "10mb", // Size limit for multipart bodies
   fileMemoryLimit: "1mb", // Max file size to keep in memory
   tempDirectory: os.tmpdir(), // Directory for temporary files
+  maxFiles: 100,
+  maxFields: 1000,
+  maxParts: 1100, // Total multipart parts, including files and fields
+  maxHeaderSize: "16kb", // Per-part header bytes (excluding final CRLF CRLF)
+  maxFieldSize: "1mb", // Per-field value bytes
 
   // Raw body parsing
   raw: false, // Enable raw body parsing (default: false)
@@ -68,7 +75,7 @@ bodyParser({
   // General options
   preserveRawBody: false, // Store raw body in req.rawBody
   cache: true, // Cache parsed body (default: true)
-  verify: undefined, // Verification function
+  verify: undefined, // Awaited for every enabled body type, before parsing/storage
 });
 ```
 
@@ -176,10 +183,13 @@ router.post(
     rawType: "buffer",
     verify: (req, res, buf, encoding) => {
       const signature = req.headers["x-webhook-signature"];
-      const hmac = crypto.createHmac("sha256", "secret");
+      const secret = process.env.WEBHOOK_SECRET; // Provision through your secret store.
+      if (!secret) throw new Error("Webhook verification is not configured");
+      const hmac = crypto.createHmac("sha256", secret);
       const expected = hmac.update(buf).digest("hex");
 
-      if (signature !== expected) {
+      if (typeof signature !== "string" || !/^[0-9a-f]{64}$/.test(signature) ||
+          !crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"))) {
         throw new Error("Invalid signature");
       }
     },
@@ -225,7 +235,7 @@ router.use(
 router.post("/upload", async (req, res) => {
   const body = await req.body;
 
-  for (const [key, file] of Object.entries(body)) {
+  for (const [key, file] of Object.entries(req.files || {})) {
     if (file && file.filename) {
       if (file.inMemory) {
         // Small file - process from memory
@@ -263,14 +273,87 @@ Error codes:
 - `LIMIT_FILE_SIZE`: Body exceeds size limit
 - `INVALID_JSON`: Malformed JSON
 - `MISSING_BOUNDARY`: Missing boundary in multipart
+- `INVALID_BOUNDARY`, `INVALID_MULTIPART`: Invalid boundary or malformed/incomplete multipart framing
+- `INVALID_FORM_KEY`: Unsafe prototype key, malformed bracket syntax, or nonnumeric array property
+- `LIMIT_FORM_DEPTH`, `LIMIT_ARRAY_SIZE`: Extended form structure exceeds configured limits (413)
+- `LIMIT_FILE_COUNT`, `LIMIT_FIELD_COUNT`, `LIMIT_PART_COUNT`: Multipart count limit exceeded (413)
+- `LIMIT_FIELD_SIZE`, `LIMIT_HEADER_SIZE`: Multipart field/header byte limit exceeded (413)
+- `INVALID_FILENAME`: Upload filename is not a safe basename
+- `EMPTY_FILE`: Empty file rejected by `allowEmptyFiles: false`
+- `REQUEST_ABORTED`: Request aborted or closed before body completion
+- `BODY_ALREADY_CONSUMED`, `INVALID_BODY_STREAM`: Body already read or decoded by earlier middleware
+- `UPLOAD_CLEANUP_FAILED`: Failed-upload rollback could not remove a created file (500; requires operator attention)
 - `PARSE_ERROR`: General parsing error
+
+`parameterLimit` applies to both simple and extended URL-encoded parsing, including
+when `preserveRawBody` is enabled. Only the first configured number of form
+parameters is parsed; later parameters are ignored. Repeated keys count separately.
+The raw body, when preserved, remains complete and subject to `urlencodedLimit`.
+
+### Input safety and compatibility
+
+- Multipart boundaries are case-insensitive **parameter names** with case-sensitive values.
+  Quoted boundary values (including internal spaces) are supported, up to 70 characters.
+  Delimiters must be complete MIME delimiter lines; bare boundary text or prefix
+  lookalikes inside binary content are preserved. Incomplete bodies and malformed
+  headers now fail with 400 instead of silently producing partial results.
+- Content-Disposition parameters are parsed as MIME tokens or quoted strings,
+  including quoted-pair escapes for quotes/backslashes. Parameter names are
+  case-insensitive; `filename` presence (even an empty value) selects file parsing
+  and all file-specific policies. `originalFilename` contains the decoded MIME
+  parameter value, not literal header escape sequences; file bytes remain binary.
+  Malformed parameters, case-insensitive duplicates, and unsupported extended or
+  continued `filename*`/`name*` variants fail with `INVALID_MULTIPART` (400), never
+  fall back to a regular field. Text resembling parameters inside a quoted value
+  cannot create extra parameters or change the field/file classification.
+- Multipart fields/files are separate null-prototype maps (`req.body`/`req.files`),
+  so a field and file with the same name are both retained. An empty `filename=""`
+  is still a file and obeys `allowEmptyFiles`. Prototype-related multipart field
+  names and extended-form path segments (`__proto__`, `constructor`, `prototype`)
+  are rejected. Extended forms accept numeric array keys or final `[]` push syntax;
+  array properties such as `length` and nested empty bracket paths are rejected.
+  Malformed bracket syntax no longer silently drops trailing key text.
+- Defaults now bound extended forms to 32 bracket levels and array length 1000,
+  and multipart to 100 files, 1000 fields, 1100 total parts, 16 KiB headers per part,
+  and 1 MiB per field. Set these explicitly when legitimate applications need more.
+  Count/depth limits must be non-negative safe integers; zero forbids that resource.
+  The total byte limit remains authoritative for all request bytes. These form
+  structural limits do not validate JSON schemas or application business data.
+- Upload filename callbacks must synchronously return a nonempty basename of at
+  most 255 UTF-8 bytes, without path separators, platform-special/control characters,
+  trailing dots/spaces, or Windows reserved device names. This applies to in-memory files too. Client filenames
+  remain untrusted metadata, never storage paths. Disk creation uses exclusive
+  `wx` mode and permissions `0600`: existing files/symlinks and duplicate callback
+  names fail rather than being overwritten. Use an application-controlled upload
+  directory whose parent directories cannot be renamed or replaced by attackers;
+  exclusive creation does not secure an attacker-writable ancestor directory.
+- Every parser now awaits `verify(req, res, buffer, charset)` once, regardless of
+  `preserveRawBody`; rejecting the hook prevents parsing and upload creation.
+  Previously, hooks were skipped for raw/multipart and when preservation was off.
+  `preserveRawBody` now retains the exact multipart/raw bytes, not a multipart
+  placeholder or a re-encoded text representation. Do not log sensitive raw bodies.
+- Aborts/premature closes settle with an error. Size violations reject promptly
+  without retaining later chunks; remaining incoming bytes are drained. Configure
+  server request/header timeouts, connection/rate limits, and a trusted proxy as
+  appropriate: body limits are not a complete slow-client/traffic defense.
+- Parsed null/empty JSON is cached as `null` rather than falling through to a
+  second read of the consumed native request. Chunked bodies are parsed on DELETE
+  and other methods as well as POST/PUT/PATCH; verification cannot be skipped by
+  omitting `Content-Length` on a chunked request. Invalid JSON errors do not echo
+  submitted payload fragments to the client.
+- Disk files created during a failed multipart parse/write/cancellation are removed
+  before the error is delivered. Successful uploads belong to the application:
+  remove them after use, including on downstream handler failures. `fileMemoryLimit`
+  selects final storage, not streaming parsing: the entire multipart body is
+  buffered first, with additional collection/copy overhead. Concurrent requests
+  multiply this memory requirement.
 
 ## Performance Considerations
 
-1. **Size Limits**: Always set appropriate size limits to prevent DoS attacks
+1. **Size Limits**: Always set appropriate size limits to prevent DoS attacks. Numeric and parsed string limits must be non-negative safe integers that fit in a Node.js Buffer; invalid values throw during middleware configuration. `parameterLimit` must be a positive safe integer.
 2. **File Storage**: Configure `fileMemoryLimit` based on available memory
 3. **Caching**: The `cache` option prevents re-parsing the same body
-4. **Streaming**: Large files are automatically streamed to disk
+4. **Buffering**: Multipart bodies are buffered before selected files are written to disk; set conservative total limits and bound concurrency
 5. **Temp Files**: Ensure temp directory has sufficient space and permissions
 
 ## Integration with Request Class
@@ -332,7 +415,7 @@ router.post(
     const body = await req.body;
     const files = [];
 
-    for (const [field, value] of Object.entries(body)) {
+    for (const [field, value] of Object.entries(req.files || {})) {
       if (value && value.filename) {
         files.push({
           field,
@@ -421,8 +504,8 @@ router.use(
 
 ### Memory issues with large files
 
-- Reduce `fileMemoryLimit` to store files on disk
-- Increase `multipartLimit` if needed
+- Reduce `multipartLimit` and concurrent uploads to bound body collection
+- `fileMemoryLimit` selects final disk storage; it does not eliminate full-body buffering
 - Ensure temp directory has space
 
 ### Parsing errors

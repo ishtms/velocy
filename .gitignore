@@ -1,5 +1,4 @@
 # Ignoring
-.gitignore
 .claude/
 CLAUDE.md
 db-client.js
@@ -8,4 +7,7 @@ test.js
 node_modules/
 script.js
 assets/unscaled
-package-lock.json
+# Commit the dependency lock; npm ci must not resolve floating versions.
+.DS_Store
+**/.DS_Store
+*.tgz

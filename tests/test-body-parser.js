@@ -1,7 +1,18 @@
 const { TestRunner, createTestServer, makeRequest, assert, assertEqual, assertDeepEqual } = require('./test-helper');
+const nodeAssert = require('node:assert/strict');
 const { Router, bodyParser } = require('../index');
 
 const runner = new TestRunner('Body Parser Tests');
+
+runner.test('Should reject unsafe parser size and count limits', async () => {
+  for (const limit of [-1, Infinity, Number.MAX_SAFE_INTEGER + 1, '999999999999999999999gb', '1tb', 'not-a-size']) {
+    nodeAssert.throws(() => bodyParser({ limit }), RangeError);
+  }
+  nodeAssert.throws(() => bodyParser({ parameterLimit: Infinity }), RangeError);
+  nodeAssert.throws(() => bodyParser({ parameterLimit: 0 }), RangeError);
+  nodeAssert.throws(() => bodyParser({ multipart: true, maxFiles: Infinity }), RangeError);
+  nodeAssert.doesNotThrow(() => bodyParser({ limit: 0 }));
+});
 
 runner.test('Should parse JSON body', async () => {
   const app = new Router();
@@ -72,6 +83,49 @@ runner.test('Should parse URL-encoded body', async () => {
     await server.close();
   }
 });
+
+for (const extended of [false, true]) {
+  for (const preserveRawBody of [false, true]) {
+    runner.test(`Should enforce URL-encoded parameter limits (extended=${extended}, preserveRawBody=${preserveRawBody})`, async () => {
+      const app = new Router();
+      app.use('/limited', bodyParser.urlencoded({ extended, preserveRawBody, parameterLimit: 2 }));
+      app.use('/larger', bodyParser.urlencoded({ extended, preserveRawBody, parameterLimit: 1001 }));
+      const respond = (req, res) => res.json({ received: req.body, raw: req.rawBody?.toString() });
+      app.post('/limited', respond);
+      app.post('/larger', respond);
+
+      const server = await createTestServer(app);
+      const submit = async (path, form) => {
+        const response = await makeRequest({
+          hostname: '127.0.0.1', port: server.port, path, method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }, form);
+        assertEqual(response.statusCode, 200);
+        const result = JSON.parse(response.body);
+        if (preserveRawBody) assertEqual(result.raw, form);
+        else nodeAssert.equal(result.raw, undefined);
+        return result.received;
+      };
+
+      try {
+        // Repeated keys count as separate parameters, not one output property.
+        assertDeepEqual(await submit('/limited', 'tag=one&tag=two'), { tag: ['one', 'two'] });
+        assertDeepEqual(await submit('/limited', 'tag=one&tag=two&tag=ignored'), { tag: ['one', 'two'] });
+        assertDeepEqual(await submit('/limited', 'name=John+Doe&value=a%26b%3Dc&ignored=yes'), {
+          name: 'John Doe', value: 'a&b=c'
+        });
+        // A configured limit above Node's default must not silently cap at 1000.
+        const form = Array.from({ length: 1002 }, (_, i) => `k${i}=v`).join('&');
+        const parsed = await submit('/larger', form);
+        assertEqual(Object.keys(parsed).length, 1001);
+        assertEqual(parsed.k1000, 'v');
+        nodeAssert.equal(parsed.k1001, undefined);
+      } finally {
+        await server.close();
+      }
+    });
+  }
+}
 
 runner.test('Should handle nested objects in URL-encoded', async () => {
   const app = new Router();

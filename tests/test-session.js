@@ -1,4 +1,4 @@
-const { TestRunner, createTestServer, makeRequest, assert, assertEqual, assertIncludes, wait } = require('./test-helper');
+const { TestRunner, createTestServer, makeRequest, assert, assertEqual, assertIncludes } = require('./test-helper');
 const { Router, session } = require('../index');
 
 const runner = new TestRunner('Session Tests');
@@ -271,7 +271,8 @@ runner.test('Should handle session options', async () => {
     assertIncludes(cookie, 'custom-session-id=', 'Should use custom session name');
     assertIncludes(cookie, 'HttpOnly', 'Should be HttpOnly');
     assertIncludes(cookie, 'SameSite=Strict', 'Should have SameSite attribute');
-    assertIncludes(cookie, 'Max-Age=60', 'Should have correct max age');
+    const maxAge = Number(cookie.match(/Max-Age=(\d+)/)[1]);
+    assert(maxAge >= 50 && maxAge <= 60, 'Should retain the one-minute deadline at second precision');
   } finally {
     await server.close();
   }
@@ -350,20 +351,23 @@ runner.test('Should handle concurrent session access', async () => {
 
 runner.test('Should handle session touch and rolling', async () => {
   const app = new Router();
+  const hour = 60 * 60 * 1000;
+  const store = new session.MemoryStore({ checkPeriod: 0 });
   
   app.use(session({
     secret: 'test-secret',
     resave: false,
     saveUninitialized: false,
     rolling: true, // Reset expiry on each request
+    store,
     cookie: {
-      maxAge: 1000 * 2 // 2 seconds
+      maxAge: 24 * hour
     }
   }));
   
   app.get('/touch', (req, res) => {
     req.session.touched = true;
-    res.json({ success: true });
+    res.json({ success: true, id: req.sessionID });
   });
   
   const server = await createTestServer(app);
@@ -378,9 +382,9 @@ runner.test('Should handle session touch and rolling', async () => {
     });
     
     const sessionCookie = response.headers['set-cookie'][0];
-    
-    // Wait 1 second
-    await wait(1000);
+    const id = JSON.parse(response.body).id;
+    // Deterministically age the stored record; no sleep or narrow TTL race.
+    store.sessions.get(id).cookie.expires = new Date(Date.now() + hour).toISOString();
     
     // Touch session (should reset expiry)
     response = await makeRequest({
@@ -394,11 +398,11 @@ runner.test('Should handle session touch and rolling', async () => {
     });
     
     assertEqual(response.statusCode, 200);
-    
-    // Wait another 1.5 seconds (total 2.5s from first request)
-    await wait(1500);
-    
-    // Session should still be valid due to rolling
+    assertEqual(JSON.parse(response.body).id, id, 'Rolling must keep the existing session');
+    assert(new Date(store.sessions.get(id).cookie.expires).getTime() > Date.now() + 23 * hour);
+
+    // An expired stored record must no longer authenticate this cookie.
+    store.sessions.get(id).cookie.expires = new Date(0).toISOString();
     response = await makeRequest({
       hostname: '127.0.0.1',
       port: server.port,
@@ -410,6 +414,7 @@ runner.test('Should handle session touch and rolling', async () => {
     });
     
     assertEqual(response.statusCode, 200);
+    assert(JSON.parse(response.body).id !== id, 'Expired sessions must receive a new ID');
   } finally {
     await server.close();
   }
@@ -494,6 +499,30 @@ runner.test('Should handle custom session stores', async () => {
     assertEqual(response.statusCode, 200);
     const sizeBody = JSON.parse(response.body);
     assertEqual(sizeBody.storeSize, 1, 'Store should have one session');
+  } finally {
+    await server.close();
+  }
+});
+
+runner.test('Should resolve automatic Secure cookies independently per request', async () => {
+  const app = new Router();
+  // Explicit trust is required: these loopback fixtures simulate a sanitizing proxy.
+  app.use(session({ secret: 'test-secret', saveUninitialized: true, proxy: true }));
+  app.get('/cookie', (req, res) => res.json({ ok: true }));
+
+  const server = await createTestServer(app);
+  try {
+    const httpResponse = await makeRequest({
+      hostname: '127.0.0.1', port: server.port, path: '/cookie', method: 'GET',
+      headers: { 'x-forwarded-proto': 'http' }
+    });
+    assert(!httpResponse.headers['set-cookie'][0].includes('; Secure'));
+
+    const httpsResponse = await makeRequest({
+      hostname: '127.0.0.1', port: server.port, path: '/cookie', method: 'GET',
+      headers: { 'x-forwarded-proto': 'https' }
+    });
+    assert(httpsResponse.headers['set-cookie'][0].includes('; Secure'));
   } finally {
     await server.close();
   }

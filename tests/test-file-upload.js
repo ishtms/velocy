@@ -369,6 +369,7 @@ runner.test('Should handle file upload with custom filename', async () => {
     app.use(bodyParser.multipart({
       uploadDir: uploadDir,
       keepExtensions: true,
+      fileMemoryLimit: 0,
       filename: (name, ext, part, form) => {
         return `custom_${Date.now()}${ext}`;
       }
@@ -409,6 +410,7 @@ runner.test('Should handle file upload with custom filename', async () => {
       assert(body.files.file, 'Should have file');
       assert(body.files.file.newFilename.startsWith('custom_'), 'Should have custom filename');
       assert(body.files.file.newFilename.endsWith('.txt'), 'Should keep extension');
+      assertEqual(fs.readFileSync(body.files.file.filepath, 'utf8'), 'File content');
     } finally {
       await server.close();
     }
@@ -456,8 +458,7 @@ runner.test('Should handle empty file uploads', async () => {
         }
       }, formData);
       
-      // Should either reject or handle empty files based on configuration
-      assert(response.statusCode === 400 || response.statusCode === 200);
+      assertEqual(response.statusCode, 400, 'allowEmptyFiles: false must reject empty file uploads');
     } finally {
       await server.close();
     }

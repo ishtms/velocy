@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const fs = require('node:fs');
+const discoverTests = require('./discover-tests');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 
@@ -43,9 +43,7 @@ async function main() {
   console.log(`${'='.repeat(60)}${colors.reset}\n`);
   
   // Get all test files
-  const testFiles = fs.readdirSync(__dirname)
-    .filter(file => file.startsWith('test-') && file.endsWith('.js'))
-    .sort();
+  const testFiles = discoverTests(__dirname);
   
   if (testFiles.length === 0) {
     console.log(`${colors.yellow}No test files found!${colors.reset}`);
